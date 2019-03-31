@@ -1,0 +1,10 @@
+{
+	"name": "Dragon Engine",
+	"allowAnyPlaceId": true,
+	"partitions": {
+		"src": {
+			"path": ".",
+			"target": ""
+		}
+	}
+}
