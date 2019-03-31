@@ -12,6 +12,7 @@ local NetworkController={}
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
 local HttpService=game:GetService("HttpService")
+local RunService=game:GetService("RunService")
 
 -------------
 -- DEFINES --
@@ -52,7 +53,7 @@ function NetworkController:PingServer(TimeOut)
 	ServerPing:FireServer(PingID)
 	
 	while not PingReturned do
-		wait()
+		RunService.Heartbeat:wait()
 		if tick()-StartTick>Latency then --Ping timed out
 			self:Log("Ping "..PingID.." TIMEOUT","Warning")
 			PingResponse:Disconnect()
@@ -71,7 +72,7 @@ function NetworkController:Init()
 	ClientPing=ReplicatedStorage.DragonEngine.Network:WaitForChild("NetworkService"):WaitForChild("ClientPing")
 	ServerPing=ReplicatedStorage.DragonEngine.Network:WaitForChild("NetworkService"):WaitForChild("ServerPing")
 	
-	self:DebugLog("[Network Service] Initialized!")
+	self:DebugLog("[Network Controller] Initialized!")
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -79,13 +80,25 @@ end
 -- @Description : Called after all services are loaded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function NetworkController:Start()
-	self:DebugLog("[Network Service] Started!")
+	self:DebugLog("[Network Controller] Started!")
 	
+	-----------------------------------------
 	-- Responding to pings from the server --
+	-----------------------------------------
 	ClientPing.OnClientEvent:connect(function(PingID)
 		self:DebugLog("CLIENT : RESPONDING TO PING "..PingID)
 		ClientPing:FireServer(PingID)
 	end)
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : Unload
+-- @Description : Called when the service is being unloaded.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function NetworkController:Unload()
+	self:Log("[Network Controller] Unloading...")
+
+	self:Log("[Network Controller] Unloaded!")
 end
 
 return NetworkController

@@ -13,6 +13,7 @@ NetworkService.Client.Server=NetworkService
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
 local HttpService=game:GetService("HttpService")
+local RunService=game:GetService("RunService")
 
 -------------
 -- DEFINES --
@@ -54,7 +55,7 @@ function NetworkService:PingClient(Player,TimeOut)
 	ClientPing:FireClient(Player,PingID)
 	
 	while not PingReturned do
-		wait()
+		RunService.Heartbeat:wait()
 		if tick()-StartTick>Latency then --Ping timed out
 			self:Log("Ping "..PingID.." TIMEOUT","Warning")
 			PingResponse:Disconnect()
@@ -81,13 +82,19 @@ end
 function NetworkService:Start()
 	self:DebugLog("[Network Service] Started!")
 	
+	--------------------------------------
 	-- Responding to pings from clients --
+	--------------------------------------
 	ServerPing.OnServerEvent:connect(function(Player,PingID)
 		self:DebugLog("SERVER : RESPONDING TO PING "..PingID)
 		ServerPing:FireClient(Player,PingID)
 	end)
 end
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : Unload
+-- @Descriptoin : Called when the service is being unloaded.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function NetworkService:Unload()
 	self:Log("[Network Service] Unloading...")
 
