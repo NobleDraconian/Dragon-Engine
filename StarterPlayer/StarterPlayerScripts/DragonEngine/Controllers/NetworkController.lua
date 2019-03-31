@@ -9,6 +9,8 @@ local NetworkController={}
 ---------------------
 -- ROBLOX Services --
 ---------------------
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+
 local HttpService=game:GetService("HttpService")
 
 -------------
@@ -66,8 +68,8 @@ end
 -- @Description : Called when the service module is first loaded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function NetworkController:Init()
-	ClientPing=game.ReplicatedStorage.DragonEngine.Network:WaitForChild("NetworkService"):WaitForChild("ClientPing")
-	ServerPing=game.ReplicatedStorage.DragonEngine.Network:WaitForChild("NetworkService"):WaitForChild("ServerPing")
+	ClientPing=ReplicatedStorage.DragonEngine.Network:WaitForChild("NetworkService"):WaitForChild("ClientPing")
+	ServerPing=ReplicatedStorage.DragonEngine.Network:WaitForChild("NetworkService"):WaitForChild("ServerPing")
 	
 	self:DebugLog("[Network Service] Initialized!")
 end
