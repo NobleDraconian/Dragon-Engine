@@ -2,9 +2,21 @@
 	"name": "Dragon Engine",
 	"allowAnyPlaceId": true,
 	"partitions": {
-		"src": {
-			"path": ".",
-			"target": ""
+		"ReplicatedStorage":{
+			"path":"./ReplicatedStorage/",
+			"target":"ReplicatedStorage"
+		},
+		"ServerScriptService":{
+			"path":"./ServerScriptService/",
+			"target":"ServerScriptService"
+		},
+		"ServerStorage":{
+			"path":"./ServerStorage/",
+			"target":"ServerStorage"
+		},
+		"StarterPlayer":{
+			"path":"./StarterPlayer/",
+			"target":"StarterPlayer"
 		}
 	}
 }
