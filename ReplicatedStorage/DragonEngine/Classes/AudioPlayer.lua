@@ -47,7 +47,7 @@ function AudioPlayer.new()
 		AutoPlay=false, --Determines whether or not the audioplayer will autoplay when moving to a new index in the playlist.
 		Looped=false, --Determines whether or not the audioplayer will loop through the playlist.
 
-		Sound=Instance.new('Sound',script),
+		Sound=Instance.new('Sound',game.Workspace),
 
 		_Destroyed=false, --Used to prevent further usage after this object is destroyed.
 		
@@ -92,13 +92,12 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : AddAudio
 -- @Description : Adds an audio with the given name and ID to the playlist.
--- @Params : string "Name" - The name to assign to the audio being added.
+-- @Params : string "AudioName" - The name to assign to the audio being added.
 --           string "ID" - The rbxasset id of the audio being added.
---           table "AudioOptions" - Options
 -- @Example : AudioPlayer:AddAudio("LobbyMusic","18300397")
 --            AudioPlayer:AddAudio("LobbyMusic","rbxassetid://183003997")
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function AudioPlayer:AddAudio(Name,ID)
+function AudioPlayer:AddAudio(AudioName,ID)
 
 	----------------
 	-- ASSERTIONS --
@@ -115,7 +114,7 @@ function AudioPlayer:AddAudio(Name,ID)
 	end
 
 	table.insert(self.Playlist,{
-		Name=(Name or "NewAudio"),
+		Name=(AudioName or "NewAudio"),
 		ID=ID,
 	})
 
@@ -130,7 +129,7 @@ function AudioPlayer:AddAudio(Name,ID)
 		print("")
 	end
 	
-	self._Events.AudioAdded:Fire(Name,#self.Playlist)
+	self._Events.AudioAdded:Fire(AudioName,#self.Playlist)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -178,31 +177,28 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : RemoveAudio
 -- @Description : Removes an audio with the given name from the playlist.
--- @Params : string "Name" - The name of the audio to be removed from the playlist.
+-- @Params : string "AudioName" - The name of the audio to be removed from the playlist.
 -- @Example : AudioPlayer:RemoveAudio("LobbyMusic")
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function AudioPlayer:RemoveAudio(Name)
+function AudioPlayer:RemoveAudio(AudioName)
 
 	----------------
 	-- ASSERTIONS --
 	----------------
 	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] RemoveAudio() : Cannot remove audio from destroyed audioplayer.")
-	assert(Name~=nil,"[Audio Player '"..self.Name.."'] RemoveAudio() : Name expected, got nil.")
-	assert(typeof(Name)=="string","[Audio Player '"..self.Name.."'] RemoveAudio() : string expected for Name, got "..typeof(Name).." instead.")
+	assert(AudioName~=nil,"[Audio Player '"..self.Name.."'] RemoveAudio() : Name expected, got nil.")
+	assert(typeof(AudioName)=="string","[Audio Player '"..self.Name.."'] RemoveAudio() : string expected for Name, got "..typeof(AudioName).." instead.")
 
 	-------------
 	-- DEFINES --
 	-------------
-	local AudioIndex=self:FindAudio(Name)
+	local AudioIndex=self:FindAudio(AudioName)
 
 	------------------------
 	-- Removing the audio --
 	------------------------
-	if AudioIndex~=nil then
-		self:RemoveAudioAtIndex(AudioIndex)
-	else
-		error("[Audio Player '"..self.Name.."'] RemoveAudio() : Could not remove audio '"..Name.."', audio was not found.")
-	end
+	assert(AudioIndex~=nil,"[Audio Player '"..self.Name.."'] RemoveAudio() : Could not remove audio '"..AudioName.."', audio was not found.")
+	self:RemoveAudioAtIndex(AudioIndex)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -216,35 +212,111 @@ function AudioPlayer:RemoveAllAudio()
 	for Index=1,#self.Playlist do
 		self:RemoveAudioAtIndex(1)
 	end
-	self.CurrentSong={}
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : FindAudio
--- @Description : Finds an audio in the playlist with the given name.
--- @Params : string "Name" - The name of the audio to find.
--- @Returns : int "Index" - The index of where the audio is in the playlist. Returns nil if the requested audio is not found.
--- @Example : local SongIndex=AudioPlayer:FindAudio("LobbyMusic")
+-- @Name : Play
+-- @Description : Plays the audio that is at the current playlist position.
+-- @Params : OPTIONAL table "AudioSettings" - A dictionary table containing the properties to apply to the audio.
+--                                            Can also include a tween.
+-- @Example : AudioPlayer:Play()
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function AudioPlayer:FindAudio(Name)
+function AudioPlayer:Play(AudioSettings)
 
 	----------------
 	-- ASSERTIONS --
 	----------------
-	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] FindAudio() : Cannot find audio in destroyed audioplayer.")
-	assert(Name~=nil,"[Audio Player '"..self.Name.."'] FindAudio() : Name expected, got nil.")
-	assert(typeof(Name)=="string","[Audio Player '"..self.Name.."'] FindAudio() : string expected for Name, got "..typeof(Name).." instead.")
-	
-	-----------------------
-	-- Finding the audio --
-	-----------------------
-	for Index=1,#self.Playlist do
-		if self.Playlist[Index].Name==Name then return Index end
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] Play() : Cannot play an audio of a destroyed audio player.")
+	if AudioSettings~=nil then
+		assert(typeof(AudioSettings)=="table","[Audio Player '"..self.Name.."'] Play() : table expected for AudioSettings, got "..typeof(AudioSettings).." instead.")
 	end
 
-	warn("[Audio Player '"..self.Name.."'] FindAudio() : Could not find an audio with the name '"..Name.."'.")
+	-----------------------
+	-- Playing the audio --
+	-----------------------
+	self:Stop()
 
-	return nil
+	--[[ Apply audio properties if specified ]]--
+	if AudioSettings~=nil then
+		for PropertyName,PropertyValue in pairs(AudioSettings) do
+			if PropertyName~="Tween" then
+				self.Sound[PropertyName]=PropertyValue
+			end
+		end
+
+		--[[ Running tween if specified ]]--
+		if AudioSettings.Tween~=nil then
+			local AudioTween=TweenService:Create(
+				self.Sound,
+				unpack(AudioSettings.Tween)
+			)
+
+			AudioTween:Play()
+		end
+	end
+
+	self.Sound.SoundId=self.CurrentSong.ID
+	self.Sound:Play()
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : PlayAudioAtIndex
+-- @Description : Plays an audio in the audio playlist at the specified index, with the given options.
+-- @Params : int "IndexNumber" - The index of the song to play.
+--           OPTIONAL table "AudioSettings" - A dictionary table containing the properties to apply to the audio.
+--                                            Can also include a tween.
+-- @Example : AudioPlayer:PlayAudioAtIndex(2)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function AudioPlayer:PlayAudioAtIndex(IndexNumber,AudioSettings)
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] PlayAudioAtIndex() : Cannot play an audio of a destroyed audio player.")
+
+	self:JumpToIndex(IndexNumber)
+	self:Play(AudioSettings)
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : PlayAudio
+-- @Description : Plays an audio in the audio playlist with the given name, with the given options.
+-- @Params : string "AudioName" - The name of the song to play.
+--           OPTIONAL table "AudioSettings" - A dictionary table containing the properties to apply to the audio.
+--                                            Can also include a tween.
+-- @Example : AudioPlayer:PlayAudio("LobbyMusic")
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function AudioPlayer:PlayAudio(AudioName,AudioSettings)
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] PlayAudio() : Cannot play an audio of a destroyed audio player.")
+
+	local AudioIndex=self:FindAudio(AudioName)
+
+	assert(AudioIndex~=nil,"[Audio Player '"..self.Name.."'] PlayAudio() : Could not find an audio with the name '"..AudioName.."'.")
+	self:JumpToIndex(AudioIndex)
+	self:Play(AudioSettings)
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : Stop
+-- @Description : Stops the currently playing audio.
+-- @Params : OPTIONAL table "Tween" - A dictionary table containing the properties for a tween that will run before the
+--                                    audio is stopped.
+-- @Example : AudioPlayer:Stop()
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function AudioPlayer:Stop(Tween)
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] Stop() : Cannot stop an audio of a destroyed audio player.")
+
+	--[[ Running tween if specified ]]--
+	if Tween~=nil then
+		local AudioTween=TweenService:Create(
+			self.Sound,
+			unpack(Tween)
+		)
+
+		AudioTween:Play()
+		spawn(function() --We spawn the function so the calling thread doesn't yield.
+			AudioTween.Completed:wait()
+			self.Sound:Stop()
+		end)
+	else
+		self.Sound:Stop()
+	end
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -274,76 +346,37 @@ function AudioPlayer:JumpToIndex(IndexNumber)
 		print("")
 	end
 
-	--self:StopAudio()
+	self:Stop()
 	self.PlaylistPosition=IndexNumber
 	self.CurrentSong=self.Playlist[IndexNumber]
-
-	if self.AutoPlay then
-		--Play audio here
-	end
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : Play
--- @Description : Plays the audio that is at the current playlist position.
--- @Params : OPTIONAL table "AudioSettings" - A dictionary table containing the properties to apply to the audio.
---                                            Can also include a tween.
--- @Example : AudioPlayer:Play()
+-- @Name : FindAudio
+-- @Description : Finds an audio in the playlist with the given name.
+-- @Params : string "AudioName" - The name of the audio to find.
+-- @Returns : int "Index" - The index of where the audio is in the playlist. Is nil if the requested audio is not found.
+-- @Example : local SongIndex=AudioPlayer:FindAudio("LobbyMusic")
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function AudioPlayer:Play(AudioSettings)
+function AudioPlayer:FindAudio(AudioName)
 
 	----------------
 	-- ASSERTIONS --
 	----------------
-	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] Play() : Cannot play an audio of a destroyed audio player.")
-	if AudioSettings~=nil then
-		assert(typeof(AudioSettings)=="table","[Audio Player '"..self.Name.."'] Play() : table expected for AudioSettings, got "..typeof(AudioSettings).." instead.")
-	end
-
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] FindAudio() : Cannot find audio in destroyed audioplayer.")
+	assert(AudioName~=nil,"[Audio Player '"..self.Name.."'] FindAudio() : Name expected, got nil.")
+	assert(typeof(AudioName)=="string","[Audio Player '"..self.Name.."'] FindAudio() : string expected for Name, got "..typeof(AudioName).." instead.")
+	
 	-----------------------
-	-- Playing the audio --
+	-- Finding the audio --
 	-----------------------
-
-	--[[ Apply audio properties if specified ]]--
-	if AudioSettings~=nil then
-		for PropertyName,PropertyValue in pairs(AudioSettings) do
-			if PropertyName~="Tween" then
-				self.Sound[PropertyName]=PropertyValue
-			end
-		end
-
-		--[[ Running tween if specified ]]--
-		--I have no clue why the ORs have to be wrapped in ().
-		if AudioSettings.Tween~=nil then
-			local AudioTween=TweenService:Create(
-				self.Sound,
-				(AudioSettings.Tween.TweenInfo or TweenInfo.new()),
-				(AudioSettings.Tween.Properties or {})
-			)
-
-			AudioTween:Play()
-		end
+	for Index=1,#self.Playlist do
+		if self.Playlist[Index].Name==AudioName then return Index end
 	end
-	wait()
-	self.Sound.SoundId=self.CurrentSong.ID
-	self.Sound:Play()
+	warn("[Audio Player '"..self.Name.."'] FindAudio() : Could not find an audio with the name '"..AudioName.."'.")
+
+	return nil
 end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : PlayAudioAtIndex
--- @Description : Plays an audio in the audio playlist at the specified index, with the given options.
--- @Example : AudioPlayer:PlayAudioAtIndex(2)
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : PlayAudio
--- @Description : Plays an audio in the audio playlist with the given name, with the given options.
--- @Params : string "AudioName" - The name of the audio to find in the playlist and play.
---           table "AudioOptions"
--- @Example : AudioPlayer:PlayAudio("LobbyMusic")
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- CLASS INITIALIZATION
