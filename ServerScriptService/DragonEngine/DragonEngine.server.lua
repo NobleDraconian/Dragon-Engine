@@ -337,11 +337,11 @@ function DragonEngine:Log(LogMessage,LogMessageType)
 		return
 	end
 	if LogMessageType=="warning" or LogMessageType=="Warning" then
-		warn("[Dragon Engine Client] "..LogMessage)
+		warn("[Dragon Engine Server] "..LogMessage)
 	elseif LogMessageType=="error" or LogMessageType=="Error" then
-		error("[Dragon Engine Client] "..LogMessage)
+		error("[Dragon Engine Server] "..LogMessage)
 	else
-		print("[Dragon Engine Client] "..LogMessage)
+		print("[Dragon Engine Server] "..LogMessage)
 	end
 end
 
@@ -358,11 +358,11 @@ function DragonEngine:DebugLog(LogMessage,LogMessageType)
 			return
 		end
 		if LogMessageType=="warning" or LogMessageType=="Warning" then
-			warn("[Dragon Engine Client] "..LogMessage)
+			warn("[Dragon Engine Server] "..LogMessage)
 		elseif LogMessageType=="error" or LogMessageType=="Error" then
-			error("[Dragon Engine Client] "..LogMessage)
+			error("[Dragon Engine Server] "..LogMessage)
 		else
-			print("[Dragon Engine Client] "..LogMessage)
+			print("[Dragon Engine Server] "..LogMessage)
 		end
 	end
 end
