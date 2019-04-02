@@ -443,8 +443,6 @@ end
 -- @Description : Unloads the specified service from the engine and destroys any endpoints/events it created.
 -- @Params : string "ServiceName" - The name of the service to unload.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local Service_Unloading=Instance.new('RemoteEvent',ReplicatedStorage.DragonEngine.Network);Service_Unloading.Name="Service_Unloading"
-
 function DragonEngine:UnloadService(ServiceName)
 	local Service=self.Services[ServiceName]
 

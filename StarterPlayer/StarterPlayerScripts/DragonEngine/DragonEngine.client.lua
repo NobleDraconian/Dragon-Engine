@@ -415,8 +415,6 @@ end
 -- @Description : Unloads the specified controller from the engine and destroys any events it has created.
 -- @Params : string "ControllerName" - The name of the controller to unload.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local Service_Unloading=ReplicatedStorage.DragonEngine.Network.Service_Unloading
-
 function DragonEngine:UnloadController(ControllerName)
 	local Controller=self.Controllers[ControllerName]
 
