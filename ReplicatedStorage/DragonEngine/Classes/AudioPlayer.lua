@@ -295,7 +295,7 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : Stop
 -- @Description : Stops the currently playing audio.
--- @Params : OPTIONAL table "Tween" - A dictionary table containing the properties for a tween that will run before the
+-- @Params : OPTIONAL table "Tween" - A table containing the properties for a tween that will run before the
 --                                    audio is stopped.
 -- @Example : AudioPlayer:Stop()
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -316,6 +316,33 @@ function AudioPlayer:Stop(Tween)
 		end)
 	else
 		self.Sound:Stop()
+	end
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : Pause
+-- @Description : Pauses the currently playing audio.
+-- @Params : OPTIONAL table "Tween" - A table containing the properties for a tween that will run before the
+--                                    audio is paused.
+-- @Example : AudioPlayer:Pause()
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function AudioPlayer:Pause(Tween)
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] Pause() : Cannot pause an audio of a destroyed audio player.")
+
+	--[[ Running tween if specified ]]--
+	if Tween~=nil then
+		local AudioTween=TweenService:Create(
+			self.Sound,
+			unpack(Tween)
+		)
+
+		AudioTween:Play()
+		spawn(function() --We spawn the function so the calling thread doesn't yield.
+			AudioTween.Completed:wait()
+			self.Sound:Pause()
+		end)
+	else
+		self.Sound:Pause()
 	end
 end
 
