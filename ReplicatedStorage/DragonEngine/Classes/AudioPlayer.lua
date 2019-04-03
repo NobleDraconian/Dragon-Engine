@@ -320,6 +320,49 @@ function AudioPlayer:Stop(Tween)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : Resume
+-- @Description : Resumes the currently paused audio.
+-- @Params : OPTIONAL table "AudioSettings" - A dictionary table containing the properties to apply to the audio.
+--                                            Can also include a tween.
+-- @Example : AudioPlayer:Resume()
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function AudioPlayer:Resume(AudioSettings)
+
+	----------------
+	-- ASSERTIONS --
+	----------------
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] Resume()) : Cannot resume an audio of a destroyed audio player.")
+	if AudioSettings~=nil then
+		assert(typeof(AudioSettings)=="table","[Audio Player '"..self.Name.."'] Resume() : table expected for AudioSettings, got "..typeof(AudioSettings).." instead.")
+	end
+
+	-----------------------
+	-- Playing the audio --
+	-----------------------
+
+	--[[ Apply audio properties if specified ]]--
+	if AudioSettings~=nil then
+		for PropertyName,PropertyValue in pairs(AudioSettings) do
+			if PropertyName~="Tween" then
+				self.Sound[PropertyName]=PropertyValue
+			end
+		end
+
+		--[[ Running tween if specified ]]--
+		if AudioSettings.Tween~=nil then
+			local AudioTween=TweenService:Create(
+				self.Sound,
+				unpack(AudioSettings.Tween)
+			)
+
+			AudioTween:Play()
+		end
+	end
+
+	self.Sound:Resume()
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : Pause
 -- @Description : Pauses the currently playing audio.
 -- @Params : OPTIONAL table "Tween" - A table containing the properties for a tween that will run before the
