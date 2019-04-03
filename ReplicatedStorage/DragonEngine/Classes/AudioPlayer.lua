@@ -26,7 +26,7 @@ local CLASS_DEBUG=true --Determines whether or not debug output will be displaye
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : SpitPlaylist
 -- @Description : Spits the playlist table to the output in JSON format.
--- @Example : AudioPlayer.Debug:SpitPlaylist
+-- @Example : AudioPlayer:SpitPlaylist()
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function AudioPlayer:SpitPlaylist()
 	for Index=1,#self.Playlist do
@@ -107,8 +107,8 @@ end
 -- @Params : int "IndexNumber" - Then index of the song to add to the playlist.
 --           string "AudioName" - The name to assign to the audio being added.
 --           string "ID" - The rbxasset id of the audio being added.
--- @Example : AudioPlayer:AddAudio("LobbyMusic","18300397")
---            AudioPlayer:AddAudio("LobbyMusic","rbxassetid://183003997")
+-- @Example : AudioPlayer:AddAudioAtIndex(#AudioPlayer.Playlist+1,"LobbyMusic","18300397")
+--            AudioPlayer:AddAudio(#AudioPlayer.Playlist+1,"LobbyMusic","rbxassetid://183003997")
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function AudioPlayer:AddAudioAtIndex(IndexNumber,AudioName,ID)
 
@@ -121,8 +121,11 @@ function AudioPlayer:AddAudioAtIndex(IndexNumber,AudioName,ID)
 	if IndexNumber~=1 then
 		assert(self.Playlist[IndexNumber-1]~=nil,"[Audio Player '"..self.Name.."'] AddAudioAtIndex() : Index out of bounds.")
 	end
+	assert(AudioName~=nil,"[Audio Player '"..self.Name.."'] AddAudioAtIndex() : AudioName expected, got nil.")
+	assert(typeof(AudioName)=="string","[Audio Player '"..self.Name.."'] AddAudioAtIndex() : string expected for AudioName, got "..typeof(AudioName).." instead.")
 	assert(ID~=nil,"[Audio Player '"..self.Name.."'] AddAudioAtIndex() : Audio ID expected, got nil.")
 	assert(typeof(ID)=="string","[Audio Player '"..self.Name.."'] AddAudioAtIndex(): String expected for ID, got "..typeof(ID).." instead.")
+	assert(self:FindAudioByName(AudioName)==false,"[Audio Player '"..self.Name.."'] AddAudioAtIndex() : An audio with the name '"..AudioName.."' already exists!")
 
 	----------------------
 	-- Adding the audio --
@@ -135,15 +138,6 @@ function AudioPlayer:AddAudioAtIndex(IndexNumber,AudioName,ID)
 		ID=ID,
 	})
 
-	if CLASS_DEBUG then
-		print("")
-		print("[Audio Player '"..self.Name.."'] Audio added.")
-		print("Added audio : "..HttpService:JSONEncode(self.Playlist[#self.Playlist]))
-		print("New audio list :")
-		self:SpitPlaylist()
-		print("")
-	end
-
 	------------------------------------------------
 	-- Update current audio and playlist position --
 	------------------------------------------------
@@ -153,13 +147,22 @@ function AudioPlayer:AddAudioAtIndex(IndexNumber,AudioName,ID)
 	if self.PlaylistPosition==0 then --First audio added.
 		self:JumpToIndex(1)
 	end
+
+	if CLASS_DEBUG then
+		print("")
+		print("[Audio Player '"..self.Name.."'] Audio added.")
+		print("Added audio : "..HttpService:JSONEncode(self.Playlist[IndexNumber]))
+		print("New audio list :")
+		self:SpitPlaylist()
+		print("")
+	end
 	
-	self._Events.AudioAdded:Fire(AudioName,#self.Playlist)
+	self._Events.AudioAdded:Fire(AudioName,IndexNumber)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : AddAudio
--- @Description : Adds an audio with the given name and ID to the end of the playlist.
+-- @Description : Adds an audio with the given name and ID at the end of the playlist.
 -- @Params : string "AudioName" - The name to assign to the audio being added.
 --           string "ID" - The rbxasset id of the audio being added.
 -- @Example : AudioPlayer:AddAudio("LobbyMusic","18300397")
@@ -169,9 +172,12 @@ function AudioPlayer:AddAudio(AudioName,ID)
 	----------------
 	-- ASSERTIONS --
 	----------------
-	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] AddAudioAtIndex() : Cannot add audio to destroyed audioplayer.")
-	assert(ID~=nil,"[Audio Player '"..self.Name.."'] AddAudioAtIndex() : Audio ID expected, got nil.")
-	assert(typeof(ID)=="string","[Audio Player '"..self.Name.."'] AddAudioAtIndex(): String expected for ID, got "..typeof(ID).." instead.")
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] AddAudio() : Cannot add audio to destroyed audioplayer.")
+	assert(AudioName~=nil,"[Audio Player '"..self.Name.."'] AddAudio() : AudioName expected, got nil.")
+	assert(typeof(AudioName)=="string","[Audio Player '"..self.Name.."'] AddAudio() : string expected for AudioName, got "..typeof(AudioName).." instead.")
+	assert(ID~=nil,"[Audio Player '"..self.Name.."'] AddAudio() : Audio ID expected, got nil.")
+	assert(typeof(ID)=="string","[Audio Player '"..self.Name.."'] AddAudio(): String expected for ID, got "..typeof(ID).." instead.")
+	assert(self:FindAudioByName(AudioName)==false,"[Audio Player '"..self.Name.."'] AddAudioAtIndex() : An audio with the name '"..AudioName.."' already exists!")
 
 	------------------------
 	-- Adding the audio --
@@ -217,11 +223,11 @@ function AudioPlayer:RemoveAudioAtIndex(IndexNumber)
 	if IndexNumber<self.PlaylistPosition then --Adjust playlist position to point to current audio.
 		self.PlaylistPosition=self.PlaylistPosition-1
 	elseif IndexNumber==self.PlaylistPosition then --Current audio was removed.
-		if self.PlaylistPosition>#self.Playlist then --Destroyed audio was last in playlist.
-			self:JumpToIndex(#self.Playlist)
-		elseif #self.Playlist==0 then --Destroyed audio was the only audio in the playlist.
+	    if #self.Playlist==0 then --Destroyed audio was the only audio in the playlist.
 			self.CurrentSong={Name="",ID="rbxassetid://0"}
 			self.PlaylistPosition=0
+		elseif self.PlaylistPosition>#self.Playlist then --Destroyed audio was last in playlist.
+			self:JumpToIndex(#self.Playlist)
 		else
 			self:JumpToIndex(self.PlaylistPosition)
 		end
@@ -254,12 +260,12 @@ function AudioPlayer:RemoveAudio(AudioName)
 	-------------
 	-- DEFINES --
 	-------------
-	local AudioIndex=self:GetAudioPlaylistPosition(AudioName)
+	local AudioFound,AudioIndex=self:FindAudioByName(AudioName)
 
 	------------------------
 	-- Removing the audio --
 	------------------------
-	assert(AudioIndex~=nil,"[Audio Player '"..self.Name.."'] RemoveAudio() : Could not remove audio '"..AudioName.."', audio was not found.")
+	assert(AudioFound==true,"[Audio Player '"..self.Name.."'] RemoveAudio() : Could not remove audio '"..AudioName.."', audio was not found.")
 	self:RemoveAudioAtIndex(AudioIndex)
 end
 
@@ -357,7 +363,6 @@ function AudioPlayer:PlayAudioAtIndex(IndexNumber,AudioSettings)
 	assert(IndexNumber~=nil,"[Audio Player '"..self.Name.."'] PlayAudioAtIndex() : IndexNumber expected, got nil.")
 	assert(typeof(IndexNumber)=="number","[Audio Player '"..self.Name.."'] PlayAudioAtIndex() : number expcted for IndexNumber, got "..typeof(IndexNumber).." instead.")
 	assert(self.Playlist[IndexNumber]~=nil,"[Audio Player '"..self.Name.."'] PlayAudioAtIndex() : Index out of bounds.")
-	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] PlayAudioAtIndex() : Cannot play an audio of a destroyed audio player.")
 	if AudioSettings~=nil then
 		assert(typeof(AudioSettings)=="table","[Audio Player '"..self.Name.."'] PlayAudioAtIndex() : table expected for AudioSettings, got "..typeof(AudioSettings).." instead.")
 	end
@@ -389,6 +394,8 @@ function AudioPlayer:PlayAudio(AudioName,AudioSettings)
 	-- ASSERTIONS --
 	----------------
 	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] PlayAudio() : Cannot play an audio of a destroyed audio player.")
+	assert(AudioName~=nil,"[Audio Player '"..self.Name.."'] PlayAudio() : AudioName expected, got nil.")
+	assert(typeof(AudioName)=="string","[Audio Player '"..self.Name.."'] PlayAudio() : string expected for AudioName, got "..typeof(AudioName).." instead.")
 	if AudioSettings~=nil then
 		assert(typeof(AudioSettings)=="table","[Audio Player '"..self.Name.."'] PlayAudioAtIndex() : table expected for AudioSettings, got "..typeof(AudioSettings).." instead.")
 	end
@@ -396,12 +403,12 @@ function AudioPlayer:PlayAudio(AudioName,AudioSettings)
 	-------------
 	-- DEFINES --
 	-------------
-	local AudioIndex=self:GetAudioPlaylistPosition(AudioName)
+	local AudioFound,AudioIndex=self:FindAudioByName(AudioName)
 
 	-----------------------
 	-- Playing the audio --
 	-----------------------
-	assert(AudioIndex~=nil,"[Audio Player '"..self.Name.."'] PlayAudio() : Could not find an audio with the name '"..AudioName.."'.")
+	assert(AudioFound==true,"[Audio Player '"..self.Name.."'] PlayAudio() : Could not find an audio with the name '"..AudioName.."'.")
 	self:JumpToIndex(AudioIndex)
 	self:Play(AudioSettings)
 end
@@ -565,30 +572,30 @@ function AudioPlayer:JumpToIndex(IndexNumber)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : GetAudioPlaylistPosition
+-- @Name : FindAudioByName
 -- @Description : Finds an audio in the playlist with the given name and returns its position in the playlist.
 -- @Params : string "AudioName" - The name of the audio to find.
--- @Returns : int "Index" - The index of where the audio is in the playlist. Is nil if the requested audio is not found.
--- @Example : local SongIndex=AudioPlayer:GetAudioPlaylistPosition("LobbyMusic")
+-- @Returns : bool "Found" - Determines whether or not the audio was found.
+--            int "Index" - The index of where the audio is in the playlist. Is nil if the requested audio is not found.
+-- @Example : local SongFound=AudioPlayera:FindAudioByName("LobbyMusic")
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function AudioPlayer:GetAudioPlaylistPosition(AudioName)
+function AudioPlayer:FindAudioByName(AudioName)
 
 	----------------
 	-- ASSERTIONS --
 	----------------
-	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] GetAudioPlaylistPosition() : Cannot find audio in destroyed audioplayer.")
-	assert(AudioName~=nil,"[Audio Player '"..self.Name.."'] GetAudioPlaylistPosition() : Name expected, got nil.")
-	assert(typeof(AudioName)=="string","[Audio Player '"..self.Name.."'] GetAudioPlaylistPosition() : string expected for Name, got "..typeof(AudioName).." instead.")
-	
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] FindAudioByName() : Cannot find audio in destroyed audioplayer.")
+	assert(AudioName~=nil,"[Audio Player '"..self.Name.."'] FindAudioByName() : AudioName expected, got nil.")
+	assert(typeof(AudioName)=="string","[Audio Player '"..self.Name.."'] FindAudioByName() : string expected for AudioName, got "..typeof(AudioName).." instead.")
+
 	-----------------------
 	-- Finding the audio --
 	-----------------------
 	for Index=1,#self.Playlist do
-		if self.Playlist[Index].Name==AudioName then return Index end
+		if self.Playlist[Index].Name==AudioName then return true,Index end
 	end
-	warn("[Audio Player '"..self.Name.."'] GetAudioPlaylistPosition() : Could not find an audio with the name '"..AudioName.."'.")
 
-	return nil
+	return false
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
