@@ -78,7 +78,7 @@ end
 -- @Example : AudioPlayer:Destroy()
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function AudioPlayer:Destroy()
-	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] Destroy() : Cannot destroy already destroyed audioplayer.")
+	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] Destroy() : Cannot destroy an already destroyed audioplayer.")
 
 	self._Destroyed=true
 
@@ -219,7 +219,13 @@ end
 -- @Description : Plays the audio that is at the current playlist position.
 -- @Params : OPTIONAL table "AudioSettings" - A dictionary table containing the properties to apply to the audio.
 --                                            Can also include a tween.
--- @Example : AudioPlayer:Play()
+-- @Example : AudioPlayer:Play({
+--                Volume=0,
+--                Tween={
+--                    TweenInfo.new(5,Enum.EasingStyle.Linear),
+--                    {Volume=1}
+--                }
+--            })
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function AudioPlayer:Play(AudioSettings)
 
@@ -265,7 +271,13 @@ end
 -- @Params : int "IndexNumber" - The index of the song to play.
 --           OPTIONAL table "AudioSettings" - A dictionary table containing the properties to apply to the audio.
 --                                            Can also include a tween.
--- @Example : AudioPlayer:PlayAudioAtIndex(2)
+-- @Example : AudioPlayer:PlayAudioAtIndex(2,{
+--                Volume=0,
+--                Tween={
+--                    TweenInfo.new(5,Enum.EasingStyle.Linear),
+--                    {Volume=1}
+--                }
+--            })
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function AudioPlayer:PlayAudioAtIndex(IndexNumber,AudioSettings)
 	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] PlayAudioAtIndex() : Cannot play an audio of a destroyed audio player.")
@@ -280,7 +292,13 @@ end
 -- @Params : string "AudioName" - The name of the song to play.
 --           OPTIONAL table "AudioSettings" - A dictionary table containing the properties to apply to the audio.
 --                                            Can also include a tween.
--- @Example : AudioPlayer:PlayAudio("LobbyMusic")
+-- @Example : AudioPlayer:PlayAudio("LobbyMusic",{
+--                Volume=0,
+--                Tween={
+--                    TweenInfo.new(5,Enum.EasingStyle.Linear),
+--                    {Volume=1}
+--                }
+--            })
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function AudioPlayer:PlayAudio(AudioName,AudioSettings)
 	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] PlayAudio() : Cannot play an audio of a destroyed audio player.")
@@ -298,6 +316,10 @@ end
 -- @Params : OPTIONAL table "Tween" - A table containing the properties for a tween that will run before the
 --                                    audio is stopped.
 -- @Example : AudioPlayer:Stop()
+--            AudioPlayer:Stop({
+--                TweenInfo.new(5,Enum.EasingStyle.Linear),
+--                {Volume=1}
+--            })
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function AudioPlayer:Stop(Tween)
 	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] Stop() : Cannot stop an audio of a destroyed audio player.")
@@ -324,7 +346,13 @@ end
 -- @Description : Resumes the currently paused audio.
 -- @Params : OPTIONAL table "AudioSettings" - A dictionary table containing the properties to apply to the audio.
 --                                            Can also include a tween.
--- @Example : AudioPlayer:Resume()
+-- @Example : AudioPlayer:Resume({
+--                Volume=0,
+--                Tween={
+--                    TweenInfo.new(5,Enum.EasingStyle.Linear),
+--                    {Volume=1}
+--                }
+--            })
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function AudioPlayer:Resume(AudioSettings)
 
@@ -367,7 +395,10 @@ end
 -- @Description : Pauses the currently playing audio.
 -- @Params : OPTIONAL table "Tween" - A table containing the properties for a tween that will run before the
 --                                    audio is paused.
--- @Example : AudioPlayer:Pause()
+-- @Example : AudioPlayer:Pause({
+--                TweenInfo.new(5,Enum.EasingStyle.Linear),
+--                {Volume=1}
+--            })
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function AudioPlayer:Pause(Tween)
 	assert(self._Destroyed==false,"[Audio Player '"..self.Name.."'] Pause() : Cannot pause an audio of a destroyed audio player.")
@@ -451,6 +482,6 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- CLASS INITIALIZATION
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-if CLASS_DEBUG then print("[Audio Player] Debug mode enabled. Logging will be verbose.") end
+if CLASS_DEBUG then warn("[Audio Player] Debug mode enabled. Logging will be verbose.") end
 
 return AudioPlayer
