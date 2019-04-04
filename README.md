@@ -19,3 +19,8 @@ Place the [Framework rbxm file](DragonEngine.rbxm) into your game.
 ## Advanced installation
 This project uses the [rofresh file syncer](https://github.com/osyrisrblx/rofresh) to sync files into studio. It can be easily ported to [rojo](https://github.com/LPGhatguy/rojo).
 Please note that this project has [dependencies](Submodules/), so be sure to keep the dependencies up to date.
+
+# Updating the framework
+If you installed the framework from the rbxm file (easy installation), simply update the individual packages when updates are available to update the framework to the latest version.
+
+If you installed the framework via rofresh/rojo, you will need to fetch the latest version of the framework from the [master branch](https://github.com/Reshiram110/Dragon-Engine). The framework's dependencies use git submodules, so you will also need to bump the submodules to the latest version from origin when desired.
