@@ -11,11 +11,11 @@ local ServerStorage=game:GetService("ServerStorage")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
 return{
-	["ServerClasses"]={ServerStorage.DragonEngine.Classes,ServerStorage.GAME.Classes},
-	["SharedClasses"]={ReplicatedStorage.DragonEngine.Classes,ReplicatedStorage.GAME.Classes},
+	["ServerClasses"]={},
+	["SharedClasses"]={ReplicatedStorage.DragonEngine.Classes},
 
-	["Utils"]={ReplicatedStorage.DragonEngine.Utils,ReplicatedStorage.GAME.Utils},
+	["Utils"]={ReplicatedStorage.DragonEngine.Utils},
 
-	["Services"]={ServerStorage.DragonEngine.Services,ServerStorage.GAME.Services},
-	["ServiceExtensions"]={ServerStorage.DragonEngine.ServiceExtensions,ServerStorage.GAME.ServiceExtensions}
+	["Services"]={ServerStorage.DragonEngine.Services},
+	["ServiceExtensions"]={}
 }

@@ -11,10 +11,10 @@ local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local Players=game:GetService("Players")
 
 return{
-	["SharedClasses"]={ReplicatedStorage.DragonEngine.Classes,ReplicatedStorage.GAME.Classes},
+	["SharedClasses"]={ReplicatedStorage.DragonEngine.Classes},
 
-	["Utils"]={ReplicatedStorage.DragonEngine.Utils,ReplicatedStorage.GAME.Utils},
+	["Utils"]={ReplicatedStorage.DragonEngine.Utils},
 
-	["Controllers"]={Players.LocalPlayer.PlayerScripts.DragonEngine.Controllers,Players.LocalPlayer.PlayerScripts:WaitForChild("GAME").Controllers},
-	["ControllerExtensions"]={Players.LocalPlayer.PlayerScripts.DragonEngine.ControllerExtensions},
+	["Controllers"]={Players.LocalPlayer.PlayerScripts.DragonEngine.Controllers},
+	["ControllerExtensions"]={},
 }
