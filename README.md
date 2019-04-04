@@ -28,5 +28,6 @@ If you installed the framework via rofresh/rojo, you will need to fetch the late
 
 PRO TIP : If you plan on using the framework across multiple games/places, I would suggest that you convert the framework root folders into packages, so you can push updates to every place that uses them.
 Here's an example of how I auto update the framework across my games/places:
-[](Docs/Img/PackageUpdating.PNG)
+<img src="Docs/Img/PackageUpdating.PNG" />
+
 Notice how instead of being regular folders, every framework root folder is actually a package. This allows you to easily push framework updates across your games/places. It also has the benefit of being able to roll back framework updates if you wish to roll back the framework version installed in your games/places.
