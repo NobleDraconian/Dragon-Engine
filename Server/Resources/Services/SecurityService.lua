@@ -15,8 +15,7 @@ local HttpService=game:GetService("HttpService")
 -- DEFINES --
 -------------
 local SERVICE_RENAMEINTERVAL=5 --The interval (in seconds) between service renames.
-
-local Services={"Workspace","ReplicatedStorage","Players","Lighting"}
+local Services={"Workspace","ReplicatedStorage","Players","Lighting","StarterPack","StarterPlayer"}
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : Init
@@ -39,7 +38,7 @@ function SecurityService:Start()
 	--------------------------------------
 	while wait(SERVICE_RENAMEINTERVAL) do
 		for Index=1,#Services do
-			game[Services[Index]].Name=HttpService:GenerateGUID(false)
+			game:GetService(Services[Index]).Name=HttpService:GenerateGUID(false)
 		end
 	end
 
