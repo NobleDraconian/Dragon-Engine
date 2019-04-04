@@ -2,9 +2,25 @@
 	"name": "Dragon Engine",
 	"allowAnyPlaceId": true,
 	"partitions": {
-		"game":{
-			"path":"./game/",
-			"target":""
+		"ServerCore":{
+			"path":"./Server/Core/",
+			"target":"ServerScriptService.DragonEngine"
+		},
+		"ServerResources":{
+			"path":"./Server/Resources/",
+			"target":"ServerStorage.DragonEngine"
+		},
+		"ClientCore":{
+			"path":"./Client/Core/",
+			"target":"StarterPlayer.StarterPlayerScripts.DragonEngine"
+		},
+		"ClientResources":{
+			"path":"./Client/Resources/",
+			"target":"StarterPlayer.StarterPlayerScripts.DragonEngine"
+		},
+		"Shared":{
+			"path":"./Shared/",
+			"target":"ReplicatedStorage.DragonEngine"
 		},
 		"lib":{
 			"path":"./Submodules/lib/",
