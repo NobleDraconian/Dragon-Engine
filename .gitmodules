@@ -1,3 +1,6 @@
 [submodule "Submodules/lib"]
 	path = Submodules/lib
 	url = https://github.com/Reshiram110/Roblox-LibModules
+[submodule "Submodules/Cmdr"]
+	path = Submodules/Cmdr
+	url = https://github.com/evaera/Cmdr

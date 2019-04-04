@@ -9,6 +9,10 @@
 		"lib":{
 			"path":"./Submodules/lib/",
 			"target":"ReplicatedStorage.DragonEngine"
+		},
+		"Cmdr":{
+			"path":"./Submodules/Cmdr/Cmdr",
+			"target":"ServerStorage.Submodules.Cmdr"
 		}
 	}
 }
