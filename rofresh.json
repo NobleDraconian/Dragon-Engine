@@ -2,21 +2,13 @@
 	"name": "Dragon Engine",
 	"allowAnyPlaceId": true,
 	"partitions": {
-		"ReplicatedStorage":{
-			"path":"./ReplicatedStorage/",
-			"target":"ReplicatedStorage"
+		"game":{
+			"path":"./game/",
+			"target":""
 		},
-		"ServerScriptService":{
-			"path":"./ServerScriptService/",
-			"target":"ServerScriptService"
-		},
-		"ServerStorage":{
-			"path":"./ServerStorage/",
-			"target":"ServerStorage"
-		},
-		"StarterPlayer":{
-			"path":"./StarterPlayer/",
-			"target":"StarterPlayer"
+		"lib":{
+			"path":"./Submodules/lib/",
+			"target":"ReplicatedStorage.DragonEngine"
 		}
 	}
 }

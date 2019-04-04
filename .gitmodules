@@ -1,0 +1,6 @@
+[submodule "lib"]
+	path = lib
+	url = https://github.com/Reshiram110/Roblox-LibModules
+[submodule "Submodules/lib"]
+	path = Submodules/lib
+	url = https://github.com/Reshiram110/Roblox-LibModules
