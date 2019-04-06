@@ -51,7 +51,7 @@ local Service_Events; --A folder containing the server sided events for services
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local function Recurse(Root)
 	local Items={}
-
+	
 	if typeof(Root)=="Instance" then --Root is an instance, make sure it is a model or a folder.
 
 		if Root:IsA("Model") or Root:IsA("Folder") then --It's a folder or a model.
@@ -66,13 +66,12 @@ local function Recurse(Root)
 				end
 			end
 		end
-
+	
 	elseif typeof(Root)=="table" then --Root is a table.
 		
-		for _,Item in pairs(Table) do
+		for _,Item in pairs(Root) do
 			if typeof(Item)=="table" then --Recurse through this subtable.
 				local SubItems=Recurse(Item)
-	
 				for _,SubItem in pairs(SubItems) do
 					table.insert(Items,SubItem)
 				end
@@ -80,8 +79,9 @@ local function Recurse(Root)
 				table.insert(Items,Item)
 			end
 		end
+	
 	end
-
+	
 	return Items
 end
 
@@ -477,7 +477,7 @@ function DragonEngine:LoadUtility(UtilModule)
 	local UtilName=UtilModule.Name
 	local Util;
 
-	self:DebugLog("Loading utility '"..ClassModule.Name.."'...")
+	self:DebugLog("Loading utility '"..UtilModule.Name.."'...")
 	local Success,Error=pcall(function() --If the module fails to load/errors, we want to keep the engine going.
 		Util=require(UtilModule)
 	end)

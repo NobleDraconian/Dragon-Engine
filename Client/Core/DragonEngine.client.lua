@@ -352,14 +352,14 @@ function DragonEngine:UnloadController(ControllerName)
 		end)
 
 		if not Success then
-			self:Log("Controller '"..ServiceName.."' unload function failed : "..Error,"Warning")
+			self:Log("Controller '"..ControllerName.."' unload function failed : "..Error,"Warning")
 		end
 	end
 
 	Controller._ClientEventsFolder:Destroy()
-	self.Controllers[ServiceName]=nil
+	self.Controllers[ControllerName]=nil
 
-	self:Log("Controller '"..ServiceName.."' unloaded.")
+	self:Log("Controller '"..ControllerName.."' unloaded.")
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -416,7 +416,7 @@ function DragonEngine:LoadUtility(UtilModule)
 	local UtilName=UtilModule.Name
 	local Util;
 
-	self:DebugLog("Loading utility '"..ClassModule.Name.."'...")
+	self:DebugLog("Loading utility '"..UtilModule.Name.."'...")
 	local Success,Error=pcall(function() --If the module fails to load/errors, we want to keep the engine going.
 		Util=require(UtilModule)
 	end)
