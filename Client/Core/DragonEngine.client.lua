@@ -35,7 +35,7 @@ local DragonEngine={
 	--Logs={}
 }
 
-local ENGINE_SETTINGS; --Holds the engines settings.
+local Engine_Settings; --Holds the engines settings.
 local Service_Endpoints; --A folder containing the remote functions/events for services with client APIs.
 local Controller_Events; --A folder containing the client sided events for controllers.
 
@@ -277,7 +277,7 @@ end
 --           DragonEngine Enum "LogMessageType" - The type of message being logged
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:DebugLog(LogMessage,LogMessageType)
-	if ENGINE_SETTINGS["Debug"] then
+	if Engine_Settings["Debug"] then
 		if LogMessage==nil then
 			print("")
 			return
@@ -467,30 +467,63 @@ print("**** WAITING FOR SERVER ****")
 print("")
 ReplicatedStorage:WaitForChild("DragonEngine"):WaitForChild("_Loaded") --Waiting for the server engine to load
 
-------------------------------------------------------
--- Making sure that the engine settings are correct --
-------------------------------------------------------
---assert(script.Parent.Settings~=nil,"[Dragon Engine CLient] Cannot initialize without settings.")
+----------------------
+-- Loading Settings --
+----------------------
+--[[ Load default settings ]]--
 local SettingsSuccess,SettingsError=pcall(function()
-	ENGINE_SETTINGS=require(ReplicatedStorage.DragonEngine.Settings.EngineSettings)
-	ENGINE_SETTINGS["Paths"]=require(ReplicatedStorage.DragonEngine.Settings.ClientPaths)
+	Engine_Settings=require(ReplicatedStorage.DragonEngine.Settings.EngineSettings)
+	Engine_Settings["Paths"]=require(ReplicatedStorage.DragonEngine.Settings.ClientPaths)
 end)
 assert(SettingsSuccess==true, SettingsSuccess==true or "[Dragon Engine Client] An error occured while loading settings : "..SettingsError)
 
-if ENGINE_SETTINGS["ShowLogoInOutput"] then print(Logo) end --Displaying the logo in the output logs.
-if ENGINE_SETTINGS["Debug"] then warn("[Dragon Engine Client] Debug enabled. Logging will be verbose.") end
+--[[ Load user settings ]]--
+if ReplicatedStorage:FindFirstChild("DragonEngine_UserSettings")~=nil then
+	local SettingsFolder=ReplicatedStorage.DragonEngine_UserSettings
+
+	local SettingsSuccess,SettingsError=pcall(function()
+		if SettingsFolder:FindFirstChild("EngineSettings")~=nil then
+			local EngineSettings=require(SettingsFolder.EngineSettings)
+
+			for SettingName,SettingValue in pairs(EngineSettings) do
+				if typeof(SettingValue)~="table" then
+					Engine_Settings[SettingName]=SettingValue
+				else
+					for Key,Val in pairs(SettingValue) do
+						Engine_Settings[SettingName][Key]=Val
+					end
+				end
+			end
+		end
+
+		if SettingsFolder:FindFirstChild("ClientPaths")~=nil then
+			local Paths=require(SettingsFolder.ClientPaths)
+			
+			for PathName,PathValues in pairs(Paths) do
+				for Index=1,#PathValues do
+					table.insert(Engine_Settings.Paths[PathName],PathValues[Index])
+				end
+			end
+		end
+	end)
+
+	assert(SettingsSuccess==true, SettingsSuccess==true or "[Dragon Engine Client] An error occured while loading settings : "..SettingsError)
+end
+
+if Engine_Settings["ShowLogoInOutput"] then print(Logo) end --Displaying the logo in the output logs.
+if Engine_Settings["Debug"] then warn("[Dragon Engine Client] Debug enabled. Logging will be verbose.") end
 
 -------------------
 -- Loading Enums --
 -------------------
-for EnumName,EnumVal in pairs(ENGINE_SETTINGS.Enums) do
+for EnumName,EnumVal in pairs(Engine_Settings.Enums) do
 	DragonEngine:DefineEnum(EnumName,EnumVal)
 end
 
 ----------------------------------
 -- Loading services,classes,etc.--
 ----------------------------------
-local Paths=ENGINE_SETTINGS["Paths"]
+local Paths=Engine_Settings["Paths"]
 
 Service_Endpoints=ReplicatedStorage.DragonEngine.Network:WaitForChild("Service_Endpoints")
 Controller_Events=Instance.new('Folder',Players.LocalPlayer.PlayerScripts.DragonEngine);Controller_Events.Name="Controller_Events"
