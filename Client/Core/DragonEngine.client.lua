@@ -589,7 +589,10 @@ DragonEngine:DebugLog("Starting controllers...")
 for ControllerName,Controller in pairs(DragonEngine.Controllers) do
 	if type(Controller.Start)=="function" then
 		DragonEngine:DebugLog("Starting controller '"..ControllerName.."'...")
-		coroutine.wrap(Controller.Start)(Controller) --Starting the service in its own thread, while giving it direct access to itself
+		pcall(function()
+			coroutine.wrap(Controller.Start)(Controller) --Starting the service in its own thread, while giving it direct access to itself
+		end)
+		DragonEngine:DebugLog("Controller '"..ControllerName.."' started.")
 	end
 end
 DragonEngine:DebugLog("All controllers running!")

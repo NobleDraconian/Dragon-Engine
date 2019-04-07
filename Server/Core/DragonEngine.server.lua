@@ -632,7 +632,10 @@ DragonEngine:DebugLog("Starting services...")
 for ServiceName,Service in pairs(DragonEngine.Services) do
 	if type(Service.Start)=="function" then --A start() function exists, run it.
 		DragonEngine:DebugLog("Starting Service '"..ServiceName.."'...")
-		coroutine.wrap(Service.Start)(Service) --Starting the service in its own thread, while giving it direct access to itself
+		pcall(function()
+			coroutine.wrap(Service.Start)(Service) --Starting the service in its own thread, while giving it direct access to itself
+		end)
+		DragonEngine:DebugLog("Service '"..ServiceName.."' started.")
 	end
 end
 DragonEngine:DebugLog("All services running!")
