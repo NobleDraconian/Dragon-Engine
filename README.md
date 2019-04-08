@@ -1,5 +1,5 @@
 # HERE BE DRAGONS!
-This framework is still a work in progress. I cannot guarantee its stability in stressful environments. Please be aware of this when utilizing it in your game.
+This framework is still a work in progress. I cannot guarantee its stability in stressful environments. Please be aware of this when utilizing it in your 
 
 <hr></hr>
 
@@ -10,12 +10,12 @@ It also features a `Service`->`Controller` relationship, with the ability to cre
 # Installation instructions
 
 ## Easy installation
-Place the [Framework rbxm file](DragonEngine.rbxm) into your game. Open the `Dragon_Engine` folder that has appeared in the explorer.
+Place the [Framework rbxm file](DragonEngine.rbxm) into your  Open the `Dragon_Engine` folder that has appeared in the explorer.
 
-1. Drag the contents of the `ServerScriptService` folder into `game.ServerScriptService`.
-2. Drag the contents of the `ServerStorage` folder into `game.ServerStorage`.
-3. Drag the contents of the `ReplicatedStorage` folder into `game.ReplicatedStorage`.
-4. Drag the contents of the `StarterPlayerScripts` folder into `game.StarterPlayer.StarterPlayerScripts`.
+1. Drag the contents of the `ServerScriptService` folder into `ServerScriptService`.
+2. Drag the contents of the `ServerStorage` folder into `ServerStorage`.
+3. Drag the contents of the `ReplicatedStorage` folder into `ReplicatedStorage`.
+4. Drag the contents of the `StarterPlayerScripts` folder into `StarterPlayer.StarterPlayerScripts`.
 
 ## Advanced installation
 This project uses the [rofresh file syncer](https://github.com/osyrisrblx/rofresh) to sync files into studio. It can be easily ported to [rojo](https://github.com/LPGhatguy/rojo).
