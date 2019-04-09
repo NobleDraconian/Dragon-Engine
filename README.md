@@ -4,7 +4,7 @@ This framework is still a work in progress. I cannot guarantee its stability in 
 Documentation is coming soon™.
 
 # About
-![](docs/images/Dragon_Engine_Logo.png)
+![](images/Dragon_Engine_Logo.png)
 
 Dragon Engine is a Lua framework designed specificially for Roblox.
 It bridges the gap between the server and client, globally loads modules to allow for easy communication (this also helps to prevent [cyclic requiring](https://en.wikipedia.org/wiki/Circular_dependency)), and is designed to serve as the 'backbone' of the game it is in.
