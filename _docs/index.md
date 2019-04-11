@@ -15,10 +15,12 @@ If you already have the framework installed, then great! We can drive straight i
 
 ## How is the framework structured?
 The framework is structured into 4 parts - `Services`, `Controllers`, `Classes` and `Utils`.
-These 4 components work together seamlessly to run your game.
+These 4 components work seamlessly together to run your game.
 
 ### Services
 Services are special modules. Unlike a typical `Class` or `Util` module, Services have a specific format that they have to follow. When the engine server runs, it automatically loads, initializes, and starts any services that it finds (based on its configuration settings). Apon loading a service, the framework will expose itself to the service via the `__index` metatable method.
+
+Essentially, services are designed to run all of the server-sided aspects of your game.
 
 **NOTE: services can only run on the *server*. They are meant to be authoritative and control server state!**
 
