@@ -1,29 +1,40 @@
-# HERE BE DRAGONS!
-This framework is still a work in progress. I cannot guarantee its stability in stressful environments. Please be aware of this when utilizing it in your game.
+# Jekyll Doc Theme
 
-Documentation is coming soon™.
+Go to [the website](https://aksakalli.github.io/jekyll-doc-theme/) for detailed information and demo.
 
-# About
-![](images/Dragon_Engine_Logo.png)
+## Running locally
 
-Dragon Engine is a Lua framework designed specificially for Roblox.
-It bridges the gap between the server and client, globally loads modules to allow for easy communication (this also helps to prevent [cyclic requiring](https://en.wikipedia.org/wiki/Circular_dependency)), and is designed to serve as the 'backbone' of the game it is in.
+You need Ruby and gem before starting, then:
 
-The general relationship between the server and client in the framework is `Service`->`Controller`, where services are authoritative, and manage server state while `Controllers` manage client state. `Controllers` can call APIs that the services define.
+```bash
+# install bundler
+gem install bundler
 
-# Installation
-There are a few ways to install the framework into your game.
+# clone the project
+git clone https://github.com/aksakalli/jekyll-doc-theme.git
+cd jekyll-doc-theme
 
-## Easy installation
-TBD
+# run jekyll with dependencies
+bundle exec jekyll serve
+```
 
-## Advanced installation
-This project uses [rojo](https://github.com/LPGhatguy/rojo) to sync into studio. If you have rojo, simply sync the framework into your game.
+## Docker
 
-This framework can also be added as a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules) if you have your own method of syncing the framework files into the game. If you choose to use this method, please consult [the rojo project configuration file](default.project.json) for information on where the files should be placed in the game.
+Alternatively, you can deploy it using the multi-stage [Dockerfile](Dockerfile)
+that serves files from Nginx for better performance in production.
 
-### Dependencies
-This project depends on [my library repo](https://github.com/Reshiram110/Roblox-LibModules) as a submodule.
+Build the image for your site's `JEKYLL_BASEURL`:
 
-# Documentation
-For full documentation, please click [here](https://Reshiram110.github.io/Dragon-Engine)
+```
+docker build --build-arg JEKYLL_BASEURL="/your-base/url" -t jekyll-doc-theme .
+```
+
+(or leave it empty for root: `JEKYLL_BASEURL=""`) and serve it:
+
+```
+docker run -p 8080:80 jekyll-doc-theme
+```
+
+## License
+
+Released under [the MIT license](LICENSE).
