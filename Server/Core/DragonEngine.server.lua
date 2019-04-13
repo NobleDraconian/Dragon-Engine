@@ -333,7 +333,6 @@ function DragonEngine:LoadService(ServiceModule)
 		
 		if Service.Client~=nil then --The service has client APIs
 			local EndpointFolder=Instance.new('Folder',Service_Endpoints);EndpointFolder.Name=ServiceName --Container for remote functions/events so clients can access the service client API.
-			
 			Service._EndpointFolder=EndpointFolder
 
 			for FunctionName,Function in pairs(Service.Client) do
@@ -384,7 +383,7 @@ function DragonEngine:UnloadService(ServiceName)
 		end
 	end
 
-	Service._EndpointFolder:Destroy()
+	if Service._EndpointFolder~=nil then Service._EndpointFolder:Destroy() end
 	Service._ServerEventsFolder:Destroy()
 	self.Services[ServiceName]=nil
 
