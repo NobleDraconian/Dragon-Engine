@@ -17,7 +17,7 @@
 
 return{
 	["ShowLogoInOutput"]=false,
-	["Debug"]=false,
+	["Debug"]=true,
 
 	["Enums"]={
 		["ServiceResponse"]={

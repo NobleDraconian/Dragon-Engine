@@ -15,6 +15,7 @@
 local Workspace=game:GetService("Workspace")
 local ServerStorage=game:GetService("ServerStorage")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local ServerScriptService=game:GetService("ServerScriptService")
 
 --------------
 -- REQUIRES --
@@ -33,8 +34,8 @@ local DragonEngine={
 	Version="2.2.0"
 	--Logs={}
 }
-
 local Engine_Settings; --Holds the engines settings.
+Instance.new('Folder',ReplicatedStorage.DragonEngine).Name="Network"
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- INTERNAL FUNCTIONS
@@ -302,7 +303,7 @@ end
 -------------
 local Service_Endpoints=Instance.new('Folder',ReplicatedStorage.DragonEngine.Network) --A folder containing the remote functions/events for services with client APIs.
 Service_Endpoints.Name="Service_Endpoints"
-local Service_Events=Instance.new('Folder',ServerStorage.DragonEngine) --A folder containing the server sided events for services.
+local Service_Events=Instance.new('Folder',ServerScriptService.DragonEngine) --A folder containing the server sided events for services.
 Service_Events.Name="Service_Events"
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -388,6 +389,17 @@ function DragonEngine:LoadService(ServiceModule)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : LoadServicesIn
+-- @Description : Loads all services in the given container.
+-- @Params : Instance "Container" - The container holding all of the service modules.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:LoadServicesIn(Container)
+	for _,ServiceModule in pairs(RecurseFind(Container,"ModuleScript")) do
+		DragonEngine:LoadService(ServiceModule)
+	end
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : UnloadService
 -- @Description : Unloads the specified service from the engine and destroys any endpoints/events it created.
 -- @Params : string "ServiceName" - The name of the service to unload.
@@ -466,9 +478,53 @@ function DragonEngine:InitializeService(ServiceName)
 			DragonEngine:Log("Failed to initialize service '"..ServiceName.."' : "..Error,"Warning")
 			return false,Error
 		end
+		Service.Status="Stopped"
 	else --Init function doesn't exist
 		self:DebugLog("Service '"..ServiceName.."' could not be initilized, no init function was found!","Warning")
 	end
+	
+	self:DebugLog("Service '"..ServiceName.."' initialized.")
+
+	return true
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : StartService
+-- @Description : Starts the specified service.
+-- @Params : bool "Success" - Whether or not the service was successfully started.
+--           string "Error" - The error message if starting the service failed. Is nil if the start succeeded.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:StartService(ServiceName)
+	----------------
+	-- Assertions --
+	----------------
+	assert(ServiceName~=nil,"[Dragon Engine Server] StartService() : string expected for 'ServiceName', got nil instead.")
+	assert(typeof(ServiceName)=="string","[Dragon Engine Server] StartService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
+	assert(self.Services[ServiceName]~=nil,"[Dragon Engine Server] StartService() : No service with the name '"..ServiceName.."' is loaded!")
+	assert(self.Services[ServiceName].Status~="Running","[Dragon Engine Server] StartService() : The service '"..ServiceName.."' is already running!")
+
+	-------------
+	-- DEFINES --
+	-------------
+	local Service=self.Services[ServiceName]
+
+	------------------------------
+	-- Initializing the service --
+	------------------------------
+	self:DebugLog("Starting service '"..ServiceName.."'...")
+	if type(Service.Start)=="function" then --An init() function exists, run it.
+		local Success,Error=pcall(function()
+			coroutine.wrap(Service.Start)(Service)
+		end)
+		if not Success then
+			DragonEngine:Log("Failed to start service '"..ServiceName.."' : "..Error,"Warning")
+			return false,Error
+		end
+	else --Start function doesn't exist
+		self:DebugLog("Service '"..ServiceName.."' could not be started, no start function was found!","Warning")
+	end
+	self:DebugLog("Service '"..ServiceName.."' started.")
+	Service.Status="Running"
 
 	return true
 end
@@ -567,6 +623,18 @@ function DragonEngine:LoadClass(ClassModule)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : LoadClassesIn
+-- @Description : Loads all class modules in the given container.
+-- @Params : Instance "Container" - The container that holds all of the class modules.
+-- @TODO : PICK UP HERE
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:LoadClassesIn(Container)
+	for _,ModuleScript in pairs(RecurseFind(Container,"ModuleScript")) do
+		self:LoadClass(ModuleScript)
+	end
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- UTILITIES
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -585,7 +653,7 @@ function DragonEngine:LoadUtility(UtilModule)
 	assert(UtilModule~=nil,"[Dragon Engine Server] LoadUtility() : ModuleScript expected for 'UtilModule', got nil instead.")
 	assert(typeof(UtilModule)=="Instance","[Dragon Engine Server] LoadUtility() : ModuleScript expected for 'Utilodule', got "..typeof(UtilModule).." instead.")
 	assert(UtilModule:IsA("ModuleScript"),"[Dragon Engine Server] LoadUtility) : ModuleScript expected for 'UtilModule', got "..UtilModule.ClassName.." instead.")
-	assert(self.Classes[UtilModule.Name]==nil,"[Dragon Engine Server] LoadUtility() : A utility with the name '"..UtilModule.Name.."' is already loaded!")
+	assert(self.Utils[UtilModule.Name]==nil,"[Dragon Engine Server] LoadUtility() : A utility with the name '"..UtilModule.Name.."' is already loaded!")
 
 	-------------
 	-- DEFINES --
@@ -604,8 +672,8 @@ function DragonEngine:LoadUtility(UtilModule)
 		DragonEngine:Log("Failed to load utility '"..UtilName.."' : "..Error,"Warning")
 		return false,Error
 	else
-		DragonEngine.Utils[UtilName]=Util
-		DragonEngine:DebugLog("Loaded Utility : '"..UtilName.."'.")
+		self.Utils[UtilName]=Util
+		self:DebugLog("Loaded Utility : '"..UtilName.."'.")
 		return true
 	end
 end
@@ -618,21 +686,7 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:LoadUtilitiesIn(Container)
 	for _,ModuleScript in pairs(RecurseFind(Container,"ModuleScript")) do
-		DragonEngine:DebugLog("Loading utility '"..Container.Name.."."..ModuleScript.Name.."'...")
-		local Module;
-		local Success,Error=pcall(function() --If the module fails to load/errors, we want to keep the engine going
-			Module=require(ModuleScript)
-		end)
-
-		if not Success then
-			DragonEngine:Log("Failed to load module '"..Folder.Name.."."..ModuleScript.Name.."' : "..Error,"Warning")
-		else
-			if ExposeEngine then
-				setmetatable(Module,{__index=DragonEngine}) --Giving the module access to Dragon Engine directly
-			end
-			Table[ModuleScript.Name]=Module
-			DragonEngine:DebugLog("Module '"..Folder.Name.."."..ModuleScript.Name.."' loaded.")
-		end
+		self:LoadUtility(ModuleScript)
 	end
 end
 
@@ -674,7 +728,6 @@ end
 ------------------------
 -- Set up environment --
 ------------------------
-Instance.new('Folder',ReplicatedStorage.DragonEngine).Name="Network"
 
 ----------------------
 -- Loading Settings --
@@ -739,25 +792,21 @@ print("")
 print("**** LOADING UTIL MODULES ****")
 print("")
 for _,Path in pairs(Paths.Utils) do
-	
+	DragonEngine:LoadUtilitiesIn(Path)
 end
 --[[ Shared classes ]]--
 print("")
 print("**** LOADING CLASS MODULES ****")
 print("")
 for _,Path in pairs(Paths.SharedClasses) do
-	LoadModules(DragonEngine.Classes,Path,false)
+	DragonEngine:LoadClassesIn(Path)
 end
 --[[ Server classes ]]--
 print("")
 print("**** LOADING SERVER CLASS MODULES ****")
 print("")
 for _,Path in pairs(Paths.ServerClasses) do
-	LoadModules(DragonEngine.Classes,Path,false)
-end
---[[ Service extensions ]]--
-for _,Path in pairs(Paths.ServiceExtensions) do
-	LoadModules(DragonEngine.ServiceExtensions,Path,true)
+	DragonEngine:LoadClassesIn(Path)
 end
 
 --[[ Loading services into the engine and initializing them ]]--
@@ -766,21 +815,18 @@ print("**** LOADING SERVICES ****")
 print("")
 DragonEngine:DebugLog("Loading and initializing services...")
 for _,Path in pairs(Paths.Services) do
-	LoadServices(Path)
+	DragonEngine:LoadServicesIn(Path)
+end
+for ServiceName,_ in pairs(DragonEngine.Services) do
+	DragonEngine:InitializeService(ServiceName)
 end
 DragonEngine:DebugLog("All services loaded and initialized!")
 
 --[[ Running services ]]--
 DragonEngine:DebugLog()
 DragonEngine:DebugLog("Starting services...")
-for ServiceName,Service in pairs(DragonEngine.Services) do
-	if type(Service.Start)=="function" then --A start() function exists, run it.
-		DragonEngine:DebugLog("Starting Service '"..ServiceName.."'...")
-		pcall(function()
-			coroutine.wrap(Service.Start)(Service) --Starting the service in its own thread, while giving it direct access to itself
-		end)
-		DragonEngine:DebugLog("Service '"..ServiceName.."' started.")
-	end
+for ServiceName,_ in pairs(DragonEngine.Services) do
+	DragonEngine:StartService(ServiceName)
 end
 DragonEngine:DebugLog("All services running!")
 
