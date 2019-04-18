@@ -1,7 +1,7 @@
 return function(Context,ServiceName)
 	Context:Reply("Stopping service '"..ServiceName.."'...")
 
-	if shared.DragonEngineServer[ServiceName]~=nil then
+	if shared.DragonEngineServer.Services[ServiceName]~=nil then
 		local Success,Error=shared.DragonEngineServer:StopService(ServiceName)
 		if Success then
 			return "Service stopped successfully."
