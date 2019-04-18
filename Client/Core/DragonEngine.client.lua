@@ -502,6 +502,48 @@ function DragonEngine:StartController(ControllerName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : StopController
+-- @Description : Stops the specified Controller.
+-- @Params : bool "Success" - Whether or not the Controller was successfully stopped.
+--           string "Error" - The error message if stopping the Controller failed. Is nil if the start succeeded.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:StopController(ControllerName)
+	----------------
+	-- Assertions --
+	----------------
+	assert(ControllerName~=nil,"[Dragon Engine Server] StopController() : string expected for 'ControllerName', got nil instead.")
+	assert(typeof(ControllerName)=="string","[Dragon Engine Server] StopController() : string expected for 'ControllerName', got "..typeof(ControllerName).." instead.")
+	assert(self.Controllers[ControllerName]~=nil,"[Dragon Engine Server] StopController() : No Controller with the name '"..ControllerName.."' is loaded!")
+	assert(self.Controllers[ControllerName].Status=="Running","[Dragon Engine Server] StopController() : The Controller '"..ControllerName.."' is already stopped!")
+
+	-------------
+	-- DEFINES --
+	-------------
+	local Controller=self.Controllers[ControllerName]
+
+	------------------------------
+	-- Stopping the Controller --
+	------------------------------
+	self:DebugLog("Stopping Controller '"..ControllerName.."'...")
+	if type(Controller.Stop)=="function" then --A stop() function exists, run it.
+		local Success,Error=pcall(function()
+			Controller:Stop()
+		end)
+		if not Success then
+			DragonEngine:Log("Failed to stop Controller '"..ControllerName.."' : "..Error,"Warning")
+			return false,Error
+		end
+		Controller.Status="Stopped"
+	else --Stop function doesn't exist
+		self:DebugLog("Controller '"..ControllerName.."' could not be stopped, no stop function was found!","Warning")
+	end
+	
+	self:DebugLog("Controller '"..ControllerName.."' stopped.")
+
+	return true
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : RegisterControllerClientEvent
 -- @Description : Registers a client event for the Controller calling. MUST BE CALLED FROM INSIDE A Controller MODULE.
 -- @Params : string "Name" - The name to assign to the client event.

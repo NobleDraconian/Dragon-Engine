@@ -530,6 +530,49 @@ function DragonEngine:StartService(ServiceName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : StopService
+-- @Description : Stops the specified service.
+-- @Params : bool "Success" - Whether or not the service was successfully stopped.
+--           string "Error" - The error message if stopping the service failed. Is nil if the start succeeded.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:StopService(ServiceName)
+	----------------
+	-- Assertions --
+	----------------
+	assert(ServiceName~=nil,"[Dragon Engine Server] StopService() : string expected for 'ServiceName', got nil instead.")
+	assert(typeof(ServiceName)=="string","[Dragon Engine Server] StopService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
+	assert(self.Services[ServiceName]~=nil,"[Dragon Engine Server] StopService() : No service with the name '"..ServiceName.."' is loaded!")
+	assert(self.Services[ServiceName].Status=="Running","[Dragon Engine Server] StopService() : The service '"..ServiceName.."' is already stopped!")
+
+	-------------
+	-- DEFINES --
+	-------------
+	local Service=self.Services[ServiceName]
+
+	------------------------------
+	-- Stopping the service --
+	------------------------------
+	self:DebugLog("Stopping service '"..ServiceName.."'...")
+	if type(Service.Stop)=="function" then --A stop() function exists, run it.
+		local Success,Error=pcall(function()
+			Service:Stop()
+		end)
+		if not Success then
+			DragonEngine:Log("Failed to stop service '"..ServiceName.."' : "..Error,"Warning")
+			return false,Error
+		end
+		Service.Status="Stopped"
+	else --Stop function doesn't exist
+		self:DebugLog("Service '"..ServiceName.."' could not be stopped, no stop function was found!","Warning")
+	end
+	
+	self:DebugLog("Service '"..ServiceName.."' stopped.")
+
+	return true
+end
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : RegisterServiceClientEvent
 -- @Description : Registers a client event for the service calling. MUST BE CALLED FROM INSIDE A SERVICE MODULE.
 -- @Params : string "Name" - The name to assign to the client event.
