@@ -24,6 +24,8 @@ local RemotesFolder=Instance.new('Folder',ReplicatedStorage.DragonEngine.Network
 local ClientPing=Instance.new('RemoteEvent',RemotesFolder);ClientPing.Name="ClientPing" --Used to ping clients
 local ServerPing=Instance.new('RemoteEvent',RemotesFolder);ServerPing.Name="ServerPing" --Used to respond to pinging clients
 
+local Connections={} --Holds any event listener connections in case the service is stopped/unloaded.
+
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : PingClient
 -- @Description : Pings the specified client and returns the ping status (success/fail) and the time in milliseconds a response took.
@@ -85,10 +87,24 @@ function NetworkService:Start()
 	--------------------------------------
 	-- Responding to pings from clients --
 	--------------------------------------
-	ServerPing.OnServerEvent:connect(function(Player,PingID)
+	local PingListener=ServerPing.OnServerEvent:connect(function(Player,PingID)
 		self:DebugLog("SERVER : RESPONDING TO PING "..PingID)
 		ServerPing:FireClient(Player,PingID)
 	end)
+	table.insert(Connections,PingListener)
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : Stop
+-- @Description : Called when the service is being stopped.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function NetworkService:Stop()
+	for i=1,#Connections do
+		Connections[1]:Disconnect()
+		table.remove(Connections,i)
+	end
+
+	self:Log("[Network Service] Stopped!")
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -99,8 +115,7 @@ function NetworkService:Unload()
 	self:Log("[Network Service] Unloading...")
 
 	self:Log("[Network Service] Removing ping events...")
-	ServerPing:Destroy()
-	ClientPing:Destroy()
+	RemotesFolder:Destroy()
 	self:Log("[Network Service] Ping events removed!")
 
 	self:Log("[Network Service] Unloaded!")
