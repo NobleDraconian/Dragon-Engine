@@ -50,7 +50,7 @@ function ExampleController:Start()
 	local GUIDListener=self.Services.ExampleService.GUIDGenerated:connect(function(GUID)
 		self:Log("[Example Controller] Example Service just generated the GUID '"..GUID.."'.")
 	end)
-	table.insert(ExampleController,GUIDListener)
+	table.insert(Connections,GUIDListener)
 
 	-------------------------------------------
 	-- Generationg a new GUID at an interval --
@@ -75,7 +75,7 @@ function ExampleController:Stop()
 	-------------------------------------------
 	for Index=1,#Connections do
 		Connections[1]:Disconnect()
-		table.remove(Connections[Index])
+		table.remove(Connections,Index)
 	end
 
 	self:Log("[Example Controller] Stopped!")
