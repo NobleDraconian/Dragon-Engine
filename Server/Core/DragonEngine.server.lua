@@ -3,7 +3,7 @@
 
 	Global backend engine for Phoenix Entertainment, LLC.
 
-	Version : 2.1.0
+	Version : 3.0.0
 
 	Programmed, designed and developed by @Reshiram110
 	Inspiration by @Crazyman32's 'Aero' framework
@@ -31,14 +31,14 @@ local DragonEngine={
 	Services={}, --Contains all services, both running and stopped
 	Enum={}, --Contains all custom Enums.
 
-	Version="2.2.0"
+	Version="3.0.0"
 	--Logs={}
 }
 local Engine_Settings; --Holds the engines settings.
 Instance.new('Folder',ReplicatedStorage.DragonEngine).Name="Network"
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- INTERNAL FUNCTIONS
+-- BOILERPLATE FUNCTIONS
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -139,98 +139,6 @@ function RecurseFilter(Root,ItemType)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadModules
--- @Description : Loads all modules in the specified folder into the specified table.
--- @Params : table "Table" - The table to lazyload the modules into
---           Instance <Folder> "Folder" - The Folder to load the modules from
---           bool "ExposeEngine" - If set to true, DragonEngine{} will be directly exposed to the modules.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local function LoadModules(Table,Folder,ExposeEngine)
-	for _,ModuleScript in pairs(RecurseFind(Folder,"ModuleScript")) do
-		DragonEngine:DebugLog("Loading module '"..Folder.Name.."."..ModuleScript.Name.."'...")
-		local Module;
-		local Success,Error=pcall(function() --If the module fails to load/errors, we want to keep the engine going
-			Module=require(ModuleScript)
-		end)
-
-		if not Success then
-			DragonEngine:Log("Failed to load module '"..Folder.Name.."."..ModuleScript.Name.."' : "..Error,"Warning")
-		else
-			if ExposeEngine then
-				setmetatable(Module,{__index=DragonEngine}) --Giving the module access to Dragon Engine directly
-			end
-			Table[ModuleScript.Name]=Module
-			DragonEngine:DebugLog("Module '"..Folder.Name.."."..ModuleScript.Name.."' loaded.")
-		end
-	end
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LazyLoadModules
--- @Description : Lazy loads all modules in the specified folder into the specified table when the modules are
---                called.
--- @Params : table "Table" - The table to lazyload the modules into
---           Instance <Folder> "Folder" - The Folder to lazy load the modules from
---           bool "ExposeEngine" - If set to true, DragonEngine{} will be directly exposed to the modules.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local function LazyLoadModules(Table,Folder,ExposeEngine)
-	setmetatable(Table,{
-		__index=function(t,ModuleName)
-			local Module;
-			local s,m=pcall(function() --If the module fails to load/errors, we want to keep the engine going
-				for _,mod in pairs(RecurseFind(Folder,"ModuleScript")) do
-					if mod.Name==ModuleName then
-						Module=require(mod)
-					end
-				end
-			end)
-
-			if not s then
-				DragonEngine:Log("Failed to lazyload module '"..Folder.Name.."."..ModuleName.."' : "..m,"Warning")
-				return nil
-			else
-				if ExposeEngine then
-					setmetatable(Module,{__index=DragonEngine}) --Giving the module access to Dragon Engine directly
-				end
-				DragonEngine:DebugLog("Module '"..Folder.Name.."."..ModuleName.."' lazyloaded.")
-				Table[ModuleName]=Module
-				return Module
-			end
-		end
-	})
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadServices
--- @Description : Loads all service modules from the specified path into the engine.
--- @Params : Instance <Folder> "Folder" - The folder to load the modules from.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function LoadServices(Folder)
-	for _,ServiceModule in pairs(RecurseFind(Folder,"ModuleScript")) do
-		if ServiceModule:IsA("ModuleScript") and ServiceModule:FindFirstChild("Disabled")==nil then
-			local ServiceLoaded=DragonEngine:LoadService(ServiceModule)
-
-			if ServiceLoaded then
-				local Service=DragonEngine:GetService(ServiceModule.Name)
-				if type(Service.Init)=="function" then --An init() function exists, run it.
-					DragonEngine:DebugLog("Initializing service '"..ServiceModule.Name.."'...")
-
-					local Success,Error=pcall(function()
-						Service:Init()
-					end)
-
-					if not Success then
-						DragonEngine:Log("Failed to initialize service '"..ServiceModule.Name.."' : "..Error,"Warning")
-						DragonEngine:UnloadService(ServiceModule.Name)
-					end
-				end
-			end
-		end
-	end
-end
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : GetOutput
 -- @Description : Returns output from the engine.
 -- @Params : Variant "Value" - The value(s) for the engine to return from this call.
@@ -306,6 +214,16 @@ Service_Endpoints.Name="Service_Endpoints"
 local Service_Events=Instance.new('Folder',ServerScriptService.DragonEngine) --A folder containing the server sided events for services.
 Service_Events.Name="Service_Events"
 
+local Service_Loaded_ServerEvent=Instance.new('BindableEvent') --Bindable event for signalling server services when a service is loaded.
+DragonEngine.ServiceLoaded=Service_Loaded_ServerEvent.Event
+local Service_Unloaded_ServerEvent=Instance.new('BindableEvent') --Bindable event for signalling server services when a service is unloaded.
+DragonEngine.ServiceUnloaded=Service_Unloaded_ServerEvent.Event
+
+local Service_Loaded_ClientEvent=Instance.new('RemoteEvent',ReplicatedStorage.DragonEngine.Network) --Remote event for signalling the engine clients that a service was loaded.
+Service_Loaded_ClientEvent.Name="ServiceLoaded"
+local Service_Unloaded_ClientEvent=Instance.new('RemoteEvent',ReplicatedStorage.DragonEngine.Network) --Remote event for signalling the engine clients that a service was unloaded.
+Service_Unloaded_ClientEvent.Name="ServiceUnloaded"
+
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name: GetService
 -- @Description : Returns the requested service.
@@ -378,12 +296,14 @@ function DragonEngine:LoadService(ServiceModule)
 
 		Service.Name=ServiceName
 		Service.Status="Uninitialized"
+		Service.Initialized=false
 		Service._ServerEventsFolder=EventsFolder
 
 		setmetatable(Service,{__index=DragonEngine}) --Exposing Dragon Engine to the service
 		self.Services[ServiceName]=Service
+		Service_Loaded_ClientEvent:FireAllClients(ServiceName)
 
-		self:DebugLog("Service '"..ServiceName.."' loaded.")
+		self:DebugLog("Service '"..ServiceName.."' loaded.")	
 		return true
 	end
 end
@@ -402,6 +322,7 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : UnloadService
 -- @Description : Unloads the specified service from the engine and destroys any endpoints/events it created.
+--                This function will attempt to Stop() the service before unloading it, to clean state.
 -- @Params : string "ServiceName" - The name of the service to unload.
 -- @Returns : Boolean "ServiceUnloaded" - Will be TRUE if the service is unloaded successfully, will be FALSE if the service failed to unload.
 --            string "ErrorMessage" - The error message if unloading the service failed. Is nil if unloading succeeded.
@@ -421,6 +342,13 @@ function DragonEngine:UnloadService(ServiceName)
 	-------------
 	local Service=self.Services[ServiceName]
 
+	--------------------------
+	-- Stopping the service --
+	--------------------------
+	if Service.Status=="Running" then
+		self:StopService(ServiceName)
+	end
+
 	---------------------------
 	-- Unloading the service --
 	---------------------------
@@ -430,8 +358,8 @@ function DragonEngine:UnloadService(ServiceName)
 			Service:Unload()
 		end)
 		if not Success then --Unloading the service failed.
-			self:Log("Service '"..ServiceName.."' unload function failed : "..Error,"Warning")
-				return false,Error
+			self:Log("Service '"..ServiceName.."' unload function failed, a memory leak is possible. : "..Error,"Warning")
+			return false,Error
 		end
 	else --The service had no unload function. Warn about potential memory leaks.
 		self:Log("Service '"..ServiceName.."' had no unload function, a memory leak is possible.","Warning")
@@ -440,6 +368,7 @@ function DragonEngine:UnloadService(ServiceName)
 	if Service._EndpointFolder~=nil then Service._EndpointFolder:Destroy() end --Destroy service endpoints
 	Service._ServerEventsFolder:Destroy() --Destroy service server events
 	self.Services[ServiceName]=nil
+	Service_Unloaded_ClientEvent:FireAllClients(ServiceName)
 
 	self:Log("Service '"..ServiceName.."' unloaded.")
 	return true
@@ -460,6 +389,7 @@ function DragonEngine:InitializeService(ServiceName)
 	assert(ServiceName~=nil,"[Dragon Engine Server] InitializeService() : string expected for 'ServiceName', got nil instead.")
 	assert(typeof(ServiceName)=="string","[Dragon Engine Server] InitializeService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
 	assert(self.Services[ServiceName]~=nil,"[Dragon Engine Server] InitializeService() : No service with the name '"..ServiceName.."' is loaded!")
+	assert(self.Services[ServiceName].Initialized==false,"[Dragon Engine Server] InitializeService() : Service '"..ServiceName.."' is already initialized!")
 
 	-------------
 	-- DEFINES --
@@ -479,6 +409,7 @@ function DragonEngine:InitializeService(ServiceName)
 			return false,Error
 		end
 		Service.Status="Stopped"
+		Service.Initialized=true
 	else --Init function doesn't exist
 		self:DebugLog("Service '"..ServiceName.."' could not be initilized, no init function was found!","Warning")
 	end
@@ -502,6 +433,7 @@ function DragonEngine:StartService(ServiceName)
 	assert(typeof(ServiceName)=="string","[Dragon Engine Server] StartService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
 	assert(self.Services[ServiceName]~=nil,"[Dragon Engine Server] StartService() : No service with the name '"..ServiceName.."' is loaded!")
 	assert(self.Services[ServiceName].Status~="Running","[Dragon Engine Server] StartService() : The service '"..ServiceName.."' is already running!")
+	assert(self.Services[ServiceName].Initialized==true,"[Dragon Engine Server] StartService() : The service '"..ServiceName.."' was not initialized!")
 
 	-------------
 	-- DEFINES --
@@ -523,8 +455,8 @@ function DragonEngine:StartService(ServiceName)
 	else --Start function doesn't exist
 		self:DebugLog("Service '"..ServiceName.."' could not be started, no start function was found!","Warning")
 	end
-	self:DebugLog("Service '"..ServiceName.."' started.")
 	Service.Status="Running"
+	self:DebugLog("Service '"..ServiceName.."' started.")	
 
 	return true
 end
@@ -868,8 +800,10 @@ DragonEngine:DebugLog("All services loaded and initialized!")
 --[[ Running services ]]--
 DragonEngine:DebugLog()
 DragonEngine:DebugLog("Starting services...")
-for ServiceName,_ in pairs(DragonEngine.Services) do
-	DragonEngine:StartService(ServiceName)
+for ServiceName,Service in pairs(DragonEngine.Services) do
+	if Service.Initialized then
+		DragonEngine:StartService(ServiceName)
+	end
 end
 DragonEngine:DebugLog("All services running!")
 
