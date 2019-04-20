@@ -4,7 +4,7 @@ return{
 	Name="DragonEngine.DisplayServiceEndpoints",
 	Aliases={"de.dispservep"},
 	Description="Displays the given service's endpoints.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",

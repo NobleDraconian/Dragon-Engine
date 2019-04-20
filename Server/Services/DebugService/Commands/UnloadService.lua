@@ -2,7 +2,7 @@ return{
 	Name="DragonEngine.UnloadService",
 	Aliases={"de.rmserv"},
 	Description="Unloads the specified service.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",

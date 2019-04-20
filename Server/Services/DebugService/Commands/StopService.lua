@@ -2,7 +2,7 @@ return{
 	Name="DragonEngine.StopService",
 	Aliases={"de.stopserv"},
 	Description="Stops the specified service.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",

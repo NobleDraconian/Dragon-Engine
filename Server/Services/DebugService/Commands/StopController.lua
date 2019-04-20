@@ -2,7 +2,7 @@ return{
 	Name="DragonEngine.StopController",
 	Aliases={"de.stopcont"},
 	Description="Stops the specified controller.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",

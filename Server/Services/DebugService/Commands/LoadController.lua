@@ -2,7 +2,7 @@ return{
 	Name="DragonEngine.LoadController",
 	Aliases={"de.addcont","de.loadcont","de.mkcont"},
 	Description="Loads the specified controller.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",

@@ -2,7 +2,7 @@ return{
 	Name="DragonEngine.UnloadController",
 	Aliases={"de.rmcont"},
 	Description="Unloads the specified controller.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",

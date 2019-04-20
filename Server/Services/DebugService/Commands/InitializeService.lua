@@ -2,7 +2,7 @@ return{
 	Name="DragonEngine.InitializeService",
 	Aliases={"de.initserv"},
 	Description="Initializes the specified service.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",

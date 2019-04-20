@@ -2,7 +2,7 @@ return{
 	Name="DragonEngine.StartController",
 	Aliases={"de.startcont"},
 	Description="Starts the specified controller.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",

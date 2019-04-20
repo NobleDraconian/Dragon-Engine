@@ -2,7 +2,7 @@ return{
 	Name="DragonEngine.DisplayControllers",
 	Aliases={"de.dispcont"},
 	Description="Dispalys a list of currently loaded controllers.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={},
 
 	Run=function(Context)

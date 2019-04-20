@@ -2,7 +2,7 @@ return{
 	Name="DragonEngine.LoadService",
 	Aliases={"de.loadserv","de.addserv","de.mkserv"},
 	Description="Loads the specified service.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",
