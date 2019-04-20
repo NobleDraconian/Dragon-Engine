@@ -23,7 +23,7 @@ return{
 				end
 			end
 		else
-			return "Service '"..ServiceName.."' was not found."
+			return "Service '"..ServiceName.."' was not found or has no endpoints."
 		end
 	end
 }
