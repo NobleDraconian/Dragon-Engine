@@ -24,7 +24,7 @@ local Cmdr;
 function DebugController:Init()
 	Cmdr=require(ReplicatedStorage:WaitForChild("CmdrClient"))
 	Cmdr:SetPlaceName(game.Name)
-	Cmdr:SetActivationKeys({ Enum.KeyCode.RightControl,Enum.KeyCode.Zero })
+	Cmdr:SetActivationKeys({ Enum.KeyCode.RightControl })
 
 	self:DebugLog("[Debug Controller] Initialized!")
 end
