@@ -22,6 +22,7 @@ local MAX_LATENCY=5 --The max time a ping will wait until auto failing.
 local ClientPing;  --Used to respond to the server
 local ServerPing;  --Used to ping the server
 
+local Connections={} --Holds any event listener connections in case the controller is stopped/unloaded.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : PingServer
@@ -85,10 +86,24 @@ function NetworkController:Start()
 	-----------------------------------------
 	-- Responding to pings from the server --
 	-----------------------------------------
-	ClientPing.OnClientEvent:connect(function(PingID)
+	local PingListener=ClientPing.OnClientEvent:connect(function(PingID)
 		self:DebugLog("CLIENT : RESPONDING TO PING "..PingID)
 		ClientPing:FireServer(PingID)
 	end)
+	table.insert(Connections,PingListener)
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : Stop
+-- @Description : Called when the controller is being stopped.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function NetworkController:Stop()
+	for i=1,#Connections do
+		Connections[1]:Disconnect()
+		table.remove(Connections,i)
+	end
+
+	self:Log("[Network Controller] Stopped!")
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------

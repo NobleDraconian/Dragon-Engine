@@ -7,15 +7,16 @@
 ---------------------
 -- Roblox Services --
 ---------------------
+local ServerScriptService= game:GetService("ServerScriptService")
 local ServerStorage=game:GetService("ServerStorage")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
 return{
 	["ServerClasses"]={},
-	["SharedClasses"]={ReplicatedStorage.DragonEngine.Classes},
+	["SharedClasses"]={ReplicatedStorage.DragonEngine.lib.Classes},
 
-	["Utils"]={ReplicatedStorage.DragonEngine.Utils},
+	["Utils"]={ReplicatedStorage.DragonEngine.lib.Utils},
 
-	["Services"]={ServerStorage.DragonEngine.Services},
+	["Services"]={ServerScriptService.DragonEngine.Services},
 	["ServiceExtensions"]={}
 }

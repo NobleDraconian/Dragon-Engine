@@ -4,7 +4,7 @@ return{
 	Name="DragonEngine.DisplayServiceEndpoints",
 	Aliases={"de.dispservep"},
 	Description="Displays the given service's endpoints.",
-	Group="Admin",
+	Group="DefaultAdmin",
 	Args={
 		{
 			Type="string",
@@ -23,7 +23,7 @@ return{
 				end
 			end
 		else
-			return "Service '"..ServiceName.."' was not found."
+			return "Service '"..ServiceName.."' was not found or has no endpoints."
 		end
 	end
 }

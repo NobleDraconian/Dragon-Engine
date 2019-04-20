@@ -3,31 +3,20 @@
 	"tree":{
 		"$className":"DataModel",
 
-		"ServerStorage":{
-			"$className":"ServerStorage",
-
-			"DragonEngine":{"$path":"./Server/Resources/"}
-		},
-
 		"ReplicatedStorage":{
 			"$className":"ReplicatedStorage",
 
 			"DragonEngine":{
 				"$path":"./Shared",
 
-				"Classes":{
-					"$path":"./Submodules/lib/Classes"
-				},
-				"Utils":{
-					"$path":"./Submodules/lib/Utils"
-				}
+				"lib":{"$path":"./Submodules/lib"}
 			}
 		},
 
 		"ServerScriptService":{
 			"$className":"ServerScriptService",
 
-			"DragonEngine":{"$path":"./Server/Core/"}
+			"DragonEngine":{"$path":"./Server"}
 		},
 
 		"StarterPlayer":{
@@ -37,9 +26,7 @@
 				"$className":"StarterPlayerScripts",
 
 				"DragonEngine":{
-					"$path":"./Client/Core/",
-
-					"Controllers":{"$path":"./Client/Resources/"}
+					"$path":"./Client"
 				}
 			}
 		}
