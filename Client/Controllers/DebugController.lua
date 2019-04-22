@@ -26,6 +26,27 @@ function DebugController:Init()
 	Cmdr:SetPlaceName(game.Name)
 	Cmdr:SetActivationKeys({ Enum.KeyCode.RightControl })
 
+	----------------------------------
+	-- Set up security for commands --
+	----------------------------------
+	Cmdr.Registry:RegisterHook("BeforeRun",function(Context)
+		local CommandWhitelist=self.Services.DebugService:GetCommandWhitelist()
+
+		if CommandWhitelist[Context.Group]~=nil then --Wasn't a custom devloper Group
+			local CanExecute=false
+
+			for Index=1,#CommandWhitelist[Context.Group] do
+				if CommandWhitelist[Context.Group][Index]==Context.Executor.UserId then
+					CanExecute=true
+					break
+				end
+			end
+			if not CanExecute then
+				return "You don't have permission to run this command!"
+			end
+		end
+	end)
+
 	self:DebugLog("[Debug Controller] Initialized!")
 end
 
