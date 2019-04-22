@@ -5,7 +5,8 @@
 	It utilizes the Cmdr package.
 --]]
 
-local DebugService={}
+local DebugService={Client={}}
+DebugService.Client.Server=DebugService
 
 ---------------------
 -- Roblox Services --
@@ -26,7 +27,6 @@ local CommandWhitelist={  --Determines who can run which commands.
 	["Help"]={game.CreatorId}
 }
 
-
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : SetCommandWhitelist
 -- @Description : Replaces the default command whitelist keys with the ones in the given dictionary table.
@@ -41,6 +41,22 @@ function DebugService:SetCommandWhitelist(Whitelist)
 			self:Log("[Debug Service] SetCommandWhitelist() : Unknown default group '"..Key.."' specified, ignoring.","Warning")
 		end
 	end
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : GetCommandWhitelist
+-- @Description : Returns the current command whitelist.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DebugService:GetCommandWhitelist()
+	return self.Utils.Table.Copy(CommandWhitelist)
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : Client.GetCommandWhitelist
+-- @Description : Returns the current command whitelist to the client.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DebugService.Client:GetCommandWhitelist()
+	return self.Server:GetCommandWhitelist()
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
