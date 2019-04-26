@@ -1,11 +1,11 @@
 --[[
-	Debug Controller
+	Engine Debug Controller
 
 	This controller handles various debugging tasks for the engine, such as displaying running controllers.
 	It utilizes the Cmdr package.
 --]]
 
-local DebugController={}
+local EngineDebugController={}
 
 ---------------------
 -- Roblox Services --
@@ -21,7 +21,7 @@ local Cmdr;
 -- @Name : Init
 -- @Description : Called when the Controller module is first loaded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DebugController:Init()
+function EngineDebugController:Init()
 	Cmdr=require(ReplicatedStorage:WaitForChild("CmdrClient"))
 	Cmdr:SetPlaceName(game.Name)
 	Cmdr:SetActivationKeys({ Enum.KeyCode.RightControl })
@@ -30,7 +30,7 @@ function DebugController:Init()
 	-- Set up security for commands --
 	----------------------------------
 	Cmdr.Registry:RegisterHook("BeforeRun",function(Context)
-		local CommandWhitelist=self.Services.DebugService:GetCommandWhitelist()
+		local CommandWhitelist=self.Services.EngineDebugService:GetCommandWhitelist()
 
 		if CommandWhitelist[Context.Group]~=nil then --Wasn't a custom devloper Group
 			local CanExecute=false
@@ -47,16 +47,16 @@ function DebugController:Init()
 		end
 	end)
 
-	self:DebugLog("[Debug Controller] Initialized!")
+	self:DebugLog("[Engine Debug Controller] Initialized!")
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : Start
 -- @Description : Called after all Controllers are loaded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DebugController:Start()
-	self:DebugLog("[Debug Controller] Started!")
+function EngineDebugController:Start()
+	self:DebugLog("[Engine Debug Controller] Started!")
 
 end
 
-return DebugController
+return EngineDebugController
