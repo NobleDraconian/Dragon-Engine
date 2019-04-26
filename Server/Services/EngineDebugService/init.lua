@@ -1,12 +1,12 @@
 --[[
-	Debug Service
+	Engine Debug Service
 
 	This services handles various debugging tasks for the engine, such as displaying running services.
 	It utilizes the Cmdr package.
 --]]
 
-local DebugService={Client={}}
-DebugService.Client.Server=DebugService
+local EngineEngineDebugService={Client={}}
+EngineEngineDebugService.Client.Server=EngineEngineDebugService
 
 ---------------------
 -- Roblox Services --
@@ -33,12 +33,12 @@ local CommandWhitelist={  --Determines who can run which commands.
 -- @Params : table "Whitelist" - The dictionary whitelist to replace the default one with.
 --                               Any unknown default groups specified will be ignored.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DebugService:SetCommandWhitelist(Whitelist)
+function EngineEngineDebugService:SetCommandWhitelist(Whitelist)
 	for Key,Table in pairs(Whitelist) do
 		if CommandWhitelist[Key]~=nil then
 			CommandWhitelist[Key]=Table
 		else --Developer tried patching a non-existant default group.
-			self:Log("[Debug Service] SetCommandWhitelist() : Unknown default group '"..Key.."' specified, ignoring.","Warning")
+			self:Log("[Engine Debug Service] SetCommandWhitelist() : Unknown default group '"..Key.."' specified, ignoring.","Warning")
 		end
 	end
 end
@@ -47,7 +47,7 @@ end
 -- @Name : GetCommandWhitelist
 -- @Description : Returns the current command whitelist.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DebugService:GetCommandWhitelist()
+function EngineEngineDebugService:GetCommandWhitelist()
 	return self.Utils.Table.Copy(CommandWhitelist)
 end
 
@@ -55,7 +55,7 @@ end
 -- @Name : Client.GetCommandWhitelist
 -- @Description : Returns the current command whitelist to the client.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DebugService.Client:GetCommandWhitelist()
+function EngineEngineDebugService.Client:GetCommandWhitelist()
 	return self.Server:GetCommandWhitelist()
 end
 
@@ -63,7 +63,7 @@ end
 -- @Name : Init
 -- @Description : Called when the service module is first loaded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DebugService:Init()
+function EngineEngineDebugService:Init()
 
 	-----------------
 	-- Set up Cmdr --
@@ -91,16 +91,16 @@ function DebugService:Init()
 		end
 	end)
 
-	self:DebugLog("[Debug Service] Initialized!")
+	self:DebugLog("[Engine Debug Service] Initialized!")
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : Start
 -- @Description : Called after all services are loaded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DebugService:Start()
-	self:DebugLog("[Debug Service] Started!")
+function EngineEngineDebugService:Start()
+	self:DebugLog("[Engine Debug Service] Started!")
 
 end
 
-return DebugService
+return EngineEngineDebugService
