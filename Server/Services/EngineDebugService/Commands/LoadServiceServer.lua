@@ -1,9 +1,9 @@
 return function(Context,ServiceRef)
 	Context:Reply("Loading service '"..ServiceRef.."'...")
 
-	local ServiceModule=shared.DragonEngineServer.Utils.Instance.GetInstanceFromPath(ServiceRef)
+	local ServiceModule=shared.DragonEngine.Utils.Instance.GetInstanceFromPath(ServiceRef)
 	if ServiceModule~=nil then
-		local Success,Error=shared.DragonEngineServer:LoadService(ServiceModule)
+		local Success,Error=shared.DragonEngine:LoadService(ServiceModule)
 		if Success then
 			return "Service loaded successfully."
 		else

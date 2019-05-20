@@ -1,206 +1,27 @@
 --[[
 	Dragon Engine Server
 
-	Global backend engine for Phoenix Entertainment, LLC.
-
-	Version : 3.0.0
-
-	Programmed, designed and developed by @Reshiram110
-	Inspiration by @Crazyman32's 'Aero' framework
+	Handles the server sided aspects for the framework, including services.
 --]]
 
 ---------------------
 -- Roblox Services --
 ---------------------
 local Workspace=game:GetService("Workspace")
-local ServerStorage=game:GetService("ServerStorage")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local ServerScriptService=game:GetService("ServerScriptService")
 
 --------------
 -- REQUIRES --
 --------------
+local DragonEngine=require(ReplicatedStorage.DragonEngine.EngineCore)
 local ENGINE_LOGO=require(ReplicatedStorage.DragonEngine.Logo)
+local Boilerplate=require(ReplicatedStorage.DragonEngine.Boilerplate)
 
 -------------
 -- DEFINES --
 -------------
-local DragonEngine={
-	Utils={}, --Contains all of the utilities being used
-	Classes={}, --Contains all of the classes being used
-	Services={}, --Contains all services, both running and stopped
-	Enum={}, --Contains all custom Enums.
-
-	Version="3.0.0"
-	--Logs={}
-}
-local Engine_Settings; --Holds the engines settings.
-Instance.new('Folder',ReplicatedStorage.DragonEngine).Name="Network"
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- BOILERPLATE FUNCTIONS
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : Recurse
--- @Description : Returns all items in a folder/model/table and all of its subfolders/submodels/subtables.
---                If it is a table, it returns all items in a table and all items in all of its sub-tables.
--- @Params : Instance <Folder>/table "Root" - The folder/table to recurse through.
--- @Returns : table "Items" - A table containing all of the items.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local function Recurse(Root)
-	local Items={}
-
-	if typeof(Root)=="Instance" then --Root is an instance, make sure it is a model or a folder.
-
-		if Root:IsA("Model") or Root:IsA("Folder") then --It's a folder or a model.
-			for _,Object in pairs(Root:GetChildren()) do
-				if Object:IsA("Folder") then --Recurse through this subfolder.
-					local SubObjects=Recurse(Object)
-					for _,SubObject in pairs(SubObjects) do
-						table.insert(Items,SubObject)
-					end
-				else --Just a regular instance, add it to the items list.
-					table.insert(Items,Object)
-				end
-			end
-		end
-
-	elseif typeof(Root)=="table" then --Root is a table.
-
-		for _,Item in pairs(Root) do
-			if typeof(Item)=="table" then --Recurse through this subtable.
-				local SubItems=Recurse(Item)
-				for _,SubItem in pairs(SubItems) do
-					table.insert(Items,SubItem)
-				end
-			else --Just a regular value, add it to the items list.
-				table.insert(Items,Item)
-			end
-		end
-
-	end
-
-	return Items
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : RecurseFind
--- @Description : Returns all items of a given type in a folder/model and all of its subfolders/submodels.
---                If it is a table, it returns all items of a given type in a table and all items in all of its
---                sub-tables.
--- @Params : Instance <Folder>/table "Root" - The folder/table to recurse through.
---           Variant "ItemType" - The type of the item to search for.
--- @Returns : table "Items" - A table containing all of the found items.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local function RecurseFind(Root,ItemType)
-	local Items={}
-
-	if typeof(Root)=="Instance" then
-		if Root:IsA("Folder") or Root:IsA("Model") then
-			for _,Item in pairs(Recurse(Root)) do
-				if Item:IsA(ItemType) then table.insert(Items,Item) end
-			end
-		end
-	elseif typeof(Root)=="table" then
-		for _,Item in pairs(Recurse(Root)) do
-			if typeof(Item)==ItemType then table.insert(Items,Item) end
-		end
-	end
-
-	return Items
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : RecurseFilter
--- @Description : Returns all items that are NOT a given type in a folder/model and all of its subfolders/submodels.
---                If it is a table, it returns all items that are NOT a given type in a table and all items in all
---                of its sub-tables.
--- @Params : Instance <Folder>/table "Root" - The folder/table to recurse through.
---           Variant "ItemType" - The type of the item to filter.
--- @Returns : table "Items" - A table containing all of the filtered items.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function RecurseFilter(Root,ItemType)
-	local Items={}
-
-	if typeof(Root)=="Instance" then
-		if Root:IsA("Folder") or Root:IsA("Model") then
-			for _,Item in pairs(Recurse(Root)) do
-				if not Item:IsA(ItemType) then table.insert(Items,Item) end
-			end
-		end
-	elseif typeof(Root)=="table" then
-		for _,Item in pairs(Recurse(Root)) do
-			if typeof(Item)~=ItemType then table.insert(Items,Item) end
-		end
-	end
-
-	return Items
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : GetOutput
--- @Description : Returns output from the engine.
--- @Params : Variant "Value" - The value(s) for the engine to return from this call.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:GetOutput(...)
-	local Values={...}
-	local OutputString="{"
-
-	for Index,Param in pairs(Values) do
-		OutputString=OutputString..tostring(Param)
-		if Values[Index+1]~=nil then OutputString=OutputString..", " end
-	end
-	OutputString=OutputString.."}"
-	return "DRAGON_ENGINE_OUTPUT -> "..OutputString
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- ENGINE LOGGING
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : Log
--- @Description : Adds the specified text to the engine logs.
--- @Params : string "LogMessage" - The message to add to the logs
---           DragonEngine Enum "LogMessageType" - The type of message being logged
--- @TODO : Design and implement custom logging system with UI
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:Log(LogMessage,LogMessageType)
-	if LogMessage==nil then
-		print("")
-		return
-	end
-	if LogMessageType=="warning" or LogMessageType=="Warning" then
-		warn("[Dragon Engine Server] "..LogMessage)
-	elseif LogMessageType=="error" or LogMessageType=="Error" then
-		error("[Dragon Engine Server] "..LogMessage)
-	else
-		print("[Dragon Engine Server] "..LogMessage)
-	end
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : DebugLog
--- @Description : Adds the specified text to the engine logs, and will only dispay if debug is set to true.
--- @Params : string "LogMessage" - The message to add to the logs
---           DragonEngine Enum "LogMessageType" - The type of message being logged
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:DebugLog(LogMessage,LogMessageType)
-	if Engine_Settings["Debug"] then
-		if LogMessage==nil then
-			print("")
-			return
-		end
-		if LogMessageType=="warning" or LogMessageType=="Warning" then
-			warn("[Dragon Engine Server] "..LogMessage)
-		elseif LogMessageType=="error" or LogMessageType=="Error" then
-			error("[Dragon Engine Server] "..LogMessage)
-		else
-			print("[Dragon Engine Server] "..LogMessage)
-		end
-	end
-end
+DragonEngine.Services={} --Contains all services, both running and stopped
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- SERVICES
@@ -209,6 +30,7 @@ end
 -------------
 -- DEFINES --
 -------------
+Instance.new('Folder',ReplicatedStorage.DragonEngine).Name="Network"
 local Service_Endpoints=Instance.new('Folder',ReplicatedStorage.DragonEngine.Network) --A folder containing the remote functions/events for services with client APIs.
 Service_Endpoints.Name="Service_Endpoints"
 local Service_Events=Instance.new('Folder',ServerScriptService.DragonEngine) --A folder containing the server sided events for services.
@@ -303,7 +125,7 @@ function DragonEngine:LoadService(ServiceModule)
 		self.Services[ServiceName]=Service
 		Service_Loaded_ClientEvent:FireAllClients(ServiceName)
 
-		self:DebugLog("Service '"..ServiceName.."' loaded.")	
+		self:DebugLog("Service '"..ServiceName.."' loaded.")
 		return true
 	end
 end
@@ -314,7 +136,7 @@ end
 -- @Params : Instance "Container" - The container holding all of the service modules.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:LoadServicesIn(Container)
-	for _,ServiceModule in pairs(RecurseFind(Container,"ModuleScript")) do
+	for _,ServiceModule in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
 		DragonEngine:LoadService(ServiceModule)
 	end
 end
@@ -413,7 +235,7 @@ function DragonEngine:InitializeService(ServiceName)
 	else --Init function doesn't exist
 		self:DebugLog("Service '"..ServiceName.."' could not be initilized, no init function was found!","Warning")
 	end
-	
+
 	self:DebugLog("Service '"..ServiceName.."' initialized.")
 
 	return true
@@ -456,7 +278,7 @@ function DragonEngine:StartService(ServiceName)
 		self:DebugLog("Service '"..ServiceName.."' could not be started, no start function was found!","Warning")
 	end
 	Service.Status="Running"
-	self:DebugLog("Service '"..ServiceName.."' started.")	
+	self:DebugLog("Service '"..ServiceName.."' started.")
 
 	return true
 end
@@ -554,149 +376,6 @@ function DragonEngine:RegisterServiceServerEvent(Name)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- CLASSES
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadClass
--- @Description : Loads the specified class module into the engine.
--- @Params : Instance <ModuleScript>  "ClassModule" - The class module to load into the engine
--- @Returns : bool "Success" - Is true if the class module was loaded successfully. Is false if it was not loaded successfully.
---            string "Error" - The error message if loading fails. Is nil if loading succeeds.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadClass(ClassModule)
-
-	----------------
-	-- Assertions --
-	----------------
-	assert(ClassModule~=nil,"[Dragon Engine Server] LoadClass() : ModuleScript expected for 'ClassModule', got nil instead.")
-	assert(typeof(ClassModule)=="Instance","[Dragon Engine Server] LoadClass() : ModuleScript expected for 'ClassModule', got "..typeof(ClassModule).." instead.")
-	assert(ClassModule:IsA("ModuleScript"),"[Dragon Engine Server] LoadClass) : ModuleScript expected for 'ClassModule', got "..ClassModule.ClassName.." instead.")
-	assert(self.Classes[ClassModule.Name]==nil,"[Dragon Engine Server] LoadClass() : A class with the name '"..ClassModule.Name.."' is already loaded!")
-
-	-------------
-	-- DEFINES --
-	-------------
-	local ClassName=ClassModule.Name
-	local Class; --Table holding the class
-
-	-----------------------
-	-- Loading the class --
-	-----------------------
-	self:DebugLog("Loading class '"..ClassModule.Name.."'...")
-	local Success,Error=pcall(function() --If the module fails to load/errors, we want to keep the engine going
-		Class=require(ClassModule)
-	end)
-	if not Success then
-		DragonEngine:Log("Failed to load class '"..ClassName.."' : "..Error,"Warning")
-		return false,Error
-	else
-		DragonEngine.Classes[ClassName]=Class
-		DragonEngine:DebugLog("Loaded Class '"..ClassName.."'.")
-		return true
-	end
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadClassesIn
--- @Description : Loads all class modules in the given container.
--- @Params : Instance "Container" - The container that holds all of the class modules.
--- @TODO : PICK UP HERE
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadClassesIn(Container)
-	for _,ModuleScript in pairs(RecurseFind(Container,"ModuleScript")) do
-		self:LoadClass(ModuleScript)
-	end
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- UTILITIES
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadUtility
--- @Description : Loads the specified utility module into the engine.
--- @Params : Instance <ModuleScript> "UtilModule" - The utility module to load into the engine
--- @Returns : bool "Success" - Is true if the utility module was loaded successfully. Is false if it was not loaded successfully.
---            string "Error" - The error message if loading fails. Is nil if loading succeeds.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadUtility(UtilModule)
-
-	----------------
-	-- Assertions --
-	----------------
-	assert(UtilModule~=nil,"[Dragon Engine Server] LoadUtility() : ModuleScript expected for 'UtilModule', got nil instead.")
-	assert(typeof(UtilModule)=="Instance","[Dragon Engine Server] LoadUtility() : ModuleScript expected for 'Utilodule', got "..typeof(UtilModule).." instead.")
-	assert(UtilModule:IsA("ModuleScript"),"[Dragon Engine Server] LoadUtility) : ModuleScript expected for 'UtilModule', got "..UtilModule.ClassName.." instead.")
-	assert(self.Utils[UtilModule.Name]==nil,"[Dragon Engine Server] LoadUtility() : A utility with the name '"..UtilModule.Name.."' is already loaded!")
-
-	-------------
-	-- DEFINES --
-	-------------
-	local UtilName=UtilModule.Name
-	local Util;
-
-	-------------------------
-	-- Loading the utility --
-	-------------------------
-	self:DebugLog("Loading utility '"..UtilModule.Name.."'...")
-	local Success,Error=pcall(function() --If the module fails to load/errors, we want to keep the engine going.
-		Util=require(UtilModule)
-	end)
-	if not Success then
-		DragonEngine:Log("Failed to load utility '"..UtilName.."' : "..Error,"Warning")
-		return false,Error
-	else
-		self.Utils[UtilName]=Util
-		self:DebugLog("Loaded Utility : '"..UtilName.."'.")
-		return true
-	end
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadUtilitiesIn
--- @Description : Loads all utility modules in the given container.
--- @Params : Instance "Container" - The container that holds all of the utility modules.
--- @TODO : PICK UP HERE
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadUtilitiesIn(Container)
-	for _,ModuleScript in pairs(RecurseFind(Container,"ModuleScript")) do
-		self:LoadUtility(ModuleScript)
-	end
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- ENUMS
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : DefineEnum
--- @Description : Creates an enum with the given name.
--- @Params : string "EnumName" - The name of the enum
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:DefineEnum(EnumName,EnumTable)
-
-	local function GetEnumItems(CustomEnum)
-		local EnumItems={}
-
-		for EnumItemName,EnumItemValue in pairs(CustomEnum) do
-			if type(EnumItemValue)=="table" then
-				for i,v in pairs(GetEnumItems(EnumItemValue)) do
-					table.insert(EnumItems,v)
-				end
-			else
-				table.insert(EnumItemValue)
-			end
-		end
-
-		return EnumItems
-	end
-
-
-	self.Enum[EnumName]=EnumTable
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ENGINE INIT
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -708,11 +387,11 @@ end
 -- Loading Settings --
 ----------------------
 --[[ Load default settings ]]--
-local SettingsSuccess,SettingsError=pcall(function()
-	Engine_Settings=require(ReplicatedStorage.DragonEngine.Settings.EngineSettings)
-	Engine_Settings["Paths"]=require(ReplicatedStorage.DragonEngine.Settings.ServerPaths)
+local DefSettingsSuccess,DefSettingsError=pcall(function()
+	DragonEngine.Config=require(ReplicatedStorage.DragonEngine.Settings.EngineSettings)
+	DragonEngine.Config["Paths"]=require(ReplicatedStorage.DragonEngine.Settings.ServerPaths)
 end)
-assert(SettingsSuccess==true, SettingsSuccess==true or "[Dragon Engine Server] An error occured while loading settings : "..SettingsError)
+assert(DefSettingsSuccess==true, DefSettingsSuccess==true or "[Dragon Engine Server] An error occured while loading settings : "..DefSettingsError)
 
 --[[ Load user settings ]]--
 if ReplicatedStorage:FindFirstChild("DragonEngine_UserSettings")~=nil then
@@ -724,10 +403,10 @@ if ReplicatedStorage:FindFirstChild("DragonEngine_UserSettings")~=nil then
 
 			for SettingName,SettingValue in pairs(EngineSettings) do
 				if typeof(SettingValue)~="table" then
-					Engine_Settings[SettingName]=SettingValue
+					DragonEngine.Config[SettingName]=SettingValue
 				else
 					for Key,Val in pairs(SettingValue) do
-						Engine_Settings[SettingName][Key]=Val
+						DragonEngine.Config[SettingName][Key]=Val
 					end
 				end
 			end
@@ -738,7 +417,7 @@ if ReplicatedStorage:FindFirstChild("DragonEngine_UserSettings")~=nil then
 
 			for PathName,PathValues in pairs(Paths) do
 				for Index=1,#PathValues do
-					table.insert(Engine_Settings.Paths[PathName],PathValues[Index])
+					table.insert(DragonEngine.Config.Paths[PathName],PathValues[Index])
 				end
 			end
 		end
@@ -747,20 +426,20 @@ if ReplicatedStorage:FindFirstChild("DragonEngine_UserSettings")~=nil then
 	assert(SettingsSuccess==true, SettingsSuccess==true or "[Dragon Engine Server] An error occured while loading settings : "..SettingsError)
 end
 
-if Engine_Settings["ShowLogoInOutput"] then print(ENGINE_LOGO) end --Displaying the logo in the output logs.
-if Engine_Settings["Debug"] then warn("[Dragon Engine Server] Debug enabled. Logging will be verbose.") end
+if DragonEngine.Config["ShowLogoInOutput"] then print(ENGINE_LOGO) end --Displaying the logo in the output logs.
+if DragonEngine.Config["Debug"] then warn("[Dragon Engine Server] Debug enabled. Logging will be verbose.") end
 
 -------------------
 -- Loading Enums --
 -------------------
-for EnumName,EnumVal in pairs(Engine_Settings.Enums) do
+for EnumName,EnumVal in pairs(DragonEngine.Config.Enums) do
 	DragonEngine:DefineEnum(EnumName,EnumVal)
 end
 
 -----------------------------------
 -- Loading services,classes,etc. --
 -----------------------------------
-local Paths=Engine_Settings.Paths
+local Paths=DragonEngine.Config.Paths
 
 --[[ Utils ]]--
 print("")
@@ -807,8 +486,11 @@ for ServiceName,Service in pairs(DragonEngine.Services) do
 end
 DragonEngine:DebugLog("All services running!")
 
-shared.DragonEngineServer=DragonEngine --Exposing the engine to the global environment
-local Engine_Loaded=Instance.new('BoolValue');Engine_Loaded.Name="_Loaded";Engine_Loaded.Value=true;Engine_Loaded.Parent=ReplicatedStorage.DragonEngine
+--[[ Engine loaded ]]--
+local Engine_Loaded=Instance.new('BoolValue')
+Engine_Loaded.Name="_Loaded"
+Engine_Loaded.Value=true
+Engine_Loaded.Parent=ReplicatedStorage.DragonEngine
 
 print("")
 DragonEngine:DebugLog((DragonEngine:GetOutput({"v",4.67,Workspace},"Hi",{},3.145967)))
