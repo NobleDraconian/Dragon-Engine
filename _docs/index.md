@@ -7,6 +7,7 @@ redirect_from: /docs/index.html
 ## Welcome to the documentation pages!
 #### This section of the site contains useful documentation for the framework.
 #### You can find service API pages, tutorials, and instructions here.
+#### NOTE : These documentation pages are currently a work in progress, documentation is incomplete!
 
 ## Getting started
 Ready to use Dragon Engine? If you haven't already, you'll want to install the framework into your game. Head over to the [installation page](../installation/) for installation instructions.
