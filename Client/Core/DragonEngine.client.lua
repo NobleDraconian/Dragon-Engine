@@ -396,33 +396,31 @@ assert(DefSettingsSuccess==true, DefSettingsSuccess==true or "[Dragon Engine Cli
 if ReplicatedStorage:FindFirstChild("DragonEngine_UserSettings")~=nil then
 	local SettingsFolder=ReplicatedStorage.DragonEngine_UserSettings
 
-	local SettingsSuccess,SettingsError=pcall(function()
+	local LoadSuccess,Error=pcall(function()
 		if SettingsFolder:FindFirstChild("EngineSettings")~=nil then
 			local EngineSettings=require(SettingsFolder.EngineSettings)
 
 			for SettingName,SettingValue in pairs(EngineSettings) do
-				if typeof(SettingValue)~="table" then
+				if DragonEngine.Config[SettingName]~=nil then --Setting exists, override with developer value.
 					DragonEngine.Config[SettingName]=SettingValue
-				else
-					for Key,Val in pairs(SettingValue) do
-						DragonEngine.Config[SettingName][Key]=Val
-					end
+				else --Setting does not exist.
+					error("Attempt to override non-existant setting!")
 				end
 			end
 		end
 
 		if SettingsFolder:FindFirstChild("ClientPaths")~=nil then
-			local Paths=require(SettingsFolder.ClientPaths)
+			local ClientPaths=require(SettingsFolder.ClientPaths)
 
-			for PathName,PathValues in pairs(Paths) do
-				for Index=1,#PathValues do
-					table.insert(DragonEngine.Config.Paths[PathName],PathValues[Index])
+			for PathName,PathValues in pairs(ClientPaths) do
+				for _,PathValue in pairs(PathValues) do
+					table.insert(DragonEngine.Config.Paths[PathName],PathValue)
 				end
 			end
 		end
 	end)
 
-	assert(SettingsSuccess==true, SettingsSuccess==true or "[Dragon Engine Client] An error occured while loading settings : "..SettingsError)
+	assert(LoadSuccess==true,LoadSuccess==true or "[Dragon Engine Server] An error occured while loading developer-specified settings : "..Error)
 end
 
 if DragonEngine.Config["ShowLogoInOutput"] then print(ENGINE_LOGO) end --Displaying the logo in the output logs.
@@ -504,5 +502,6 @@ end)
 
 --[[ Engine loaded ]]--
 print("")
-DragonEngine:DebugLog((DragonEngine:GetOutput({"v",4.67,Workspace},"Hi",{},3.145967)))
+DragonEngine:DebugLog("Engine config : ")
+DragonEngine:DebugLog(DragonEngine.Utils.Table.repr(DragonEngine.Config,{pretty=true}))
 print("Dragon Engine "..DragonEngine.Version.." loaded!")
