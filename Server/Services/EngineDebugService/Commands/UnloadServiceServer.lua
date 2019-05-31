@@ -1,8 +1,8 @@
 return function(Context,ServiceName)
 	Context:Reply("Unloading service '"..ServiceName.."'...")
 
-	if shared.DragonEngineServer.Services[ServiceName]~=nil then
-		local Success,Error=shared.DragonEngineServer:UnloadService(ServiceName)
+	if shared.DragonEngine.Services[ServiceName]~=nil then
+		local Success,Error=shared.DragonEngine:UnloadService(ServiceName)
 		if Success then
 			return "Service unloaded successfully."
 		else

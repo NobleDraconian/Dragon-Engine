@@ -19,6 +19,8 @@ return{
 	["ShowLogoInOutput"]=false,
 	["Debug"]=false,
 
+	["IgnoredModules"]={"ExampleService","ExampleController"},
+
 	["Enums"]={
 		["ServiceResponse"]={
 			["BadRequest"]="ERR_BAD_REQUEST",

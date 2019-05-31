@@ -1,8 +1,8 @@
 return function(Context,ServiceName)
 	Context:Reply("Initializing service '"..ServiceName.."'...")
 
-	if shared.DragonEngineServer.Services[ServiceName]~=nil then
-		local Success,Error=shared.DragonEngineServer:InitializeService(ServiceName)
+	if shared.DragonEngine.Services[ServiceName]~=nil then
+		local Success,Error=shared.DragonEngine:InitializeService(ServiceName)
 
 		if Success then
 			return "Service initialized successfully."
