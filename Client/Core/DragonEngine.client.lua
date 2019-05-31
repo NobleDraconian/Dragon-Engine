@@ -32,6 +32,19 @@ print("")
 ReplicatedStorage:WaitForChild("DragonEngine"):WaitForChild("_Loaded") --Waiting for the server engine to load
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Boilerplate
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+local function IsModuleIgnored(Module)
+	for _,ModuleName in pairs(DragonEngine.Config.IgnoredModules) do
+		if ModuleName==Module.Name then
+			return true
+		end
+	end
+
+	return false
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- SERVICES
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -169,7 +182,9 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:LoadControllersIn(Container)
 	for _,ControllerModule in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
-		DragonEngine:LoadController(ControllerModule)
+		if not IsModuleIgnored(ControllerModule) then
+			DragonEngine:LoadController(ControllerModule)
+		end
 	end
 end
 
