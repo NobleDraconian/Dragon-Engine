@@ -47,6 +47,19 @@ local Service_Unloaded_ClientEvent=Instance.new('RemoteEvent',ReplicatedStorage.
 Service_Unloaded_ClientEvent.Name="ServiceUnloaded"
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Boilerplate
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+local function IsModuleIgnored(Module)
+	for _,ModuleName in pairs(DragonEngine.Config.IgnoredModules) do
+		if ModuleName==Module.Name then
+			return true
+		end
+	end
+
+	return false
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name: GetService
 -- @Description : Returns the requested service.
 --                Similiar to game:GetService().
@@ -137,7 +150,9 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:LoadServicesIn(Container)
 	for _,ServiceModule in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
-		DragonEngine:LoadService(ServiceModule)
+		if not IsModuleIgnored(ServiceModule) then
+			DragonEngine:LoadService(ServiceModule)
+		end
 	end
 end
 

@@ -32,6 +32,19 @@ local DragonEngine={
 }
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Boilerplate
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+local function IsModuleIgnored(Module)
+	for _,ModuleName in pairs(DragonEngine.Config.IgnoredModules) do
+		if ModuleName==Module.Name then
+			return true
+		end
+	end
+
+	return false
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : GetOutput
 -- @Description : Returns output from the engine.
 -- @Params : Variant "Value" - The value(s) for the engine to return from this call.
@@ -147,7 +160,9 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:LoadClassesIn(Container)
 	for _,ModuleScript in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
-		self:LoadClass(ModuleScript)
+		if not IsModuleIgnored(ModuleScript) then
+			self:LoadClass(ModuleScript)
+		end
 	end
 end
 
@@ -203,7 +218,9 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:LoadUtilitiesIn(Container)
 	for _,ModuleScript in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
-		self:LoadUtility(ModuleScript)
+		if not IsModuleIgnored(ModuleScript) then
+			self:LoadUtility(ModuleScript)
+		end
 	end
 end
 
