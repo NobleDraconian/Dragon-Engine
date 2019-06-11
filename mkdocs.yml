@@ -1,19 +1,22 @@
+# Site config
 site_name: Dragon Engine
 site_url: https://Reshiram110.github.io/Dragon-Engine
 site_description: Documentation pages for Dragon Engine
 site_author: Jayden Charbonneau
 
+# Repo config
 repo_name: Reshiram110/Dragon-Engine
 repo_url: https://github.com/Reshiram110/Dragon-Engine
-edit_uri: https://github.com/Reshiram110/Dragon-Engine/tree/gh-pages/docs/
+edit_uri: ""
 
+# Theme
 theme: 
   name: 'material'
   logo: Img/Dragon_Engine_Logo_White.png
 extra_css:
   - theme.css
 
-
+# Navigation
 nav:
   - Home : index.md
   - API :
@@ -26,6 +29,17 @@ nav:
     - 'Contributing': About/Contributing.md
   - Test : Test.md
 
+# Extra stuff
+extra:
+  social:
+    - type: github
+      link: https://github.com/Reshiram110
+    - type: twitter-square
+      link: https://twitter.com/Reshiram110
+    - type: comments
+      link: https://discord.gg/mhtGUS8
+
+# Extensions
 markdown_extensions:
   - admonition
   - codehilite:
