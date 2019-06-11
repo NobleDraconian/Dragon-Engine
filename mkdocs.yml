@@ -9,7 +9,7 @@ edit_uri: https://github.com/Reshiram110/Dragon-Engine/tree/gh-pages/docs/
 
 theme: 
   name: 'material'
-  logo: res/img/Dragon_Engine_Logo.png
+  logo: Img/Dragon_Engine_Logo_White.png
 extra_css:
   - theme.css
 
