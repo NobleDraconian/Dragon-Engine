@@ -1,1 +1,38 @@
-site_name: My Docs
+site_name: Dragon Engine
+site_url: https://Reshiram110.github.io/Dragon-Engine
+site_description: Documentation pages for Dragon Engine
+site_author: Jayden Charbonneau
+
+repo_name: Reshiram110/Dragon-Engine
+repo_url: https://github.com/Reshiram110/Dragon-Engine
+edit_uri: https://github.com/Reshiram110/Dragon-Engine/tree/gh-pages/docs/
+
+theme: 
+  name: 'material'
+  logo: res/img/Dragon_Engine_Logo.png
+
+extra_css:
+  - style/dark_theme.css
+
+
+nav:
+  - Home : index.md
+  - API :
+    - 'Framework core API': API/Core.md
+    - 'Framework server API': API/Server.md
+    - 'Framework client API': API/Client.md
+  - About :
+    - 'License': About/License.md
+    - 'Release Notes': About/ReleaseNotes.md
+    - 'Contributing': About/Contributing.md
+  - Test : Test.md
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      linenums: true
+      guess_lang: false
+      pygments_style: 'monokai'
+      noclasses: true
+  - footnotes
+  - meta
