@@ -231,6 +231,7 @@ into the framework (`DragonEngine.Utils`).
 ??? info "Example usage"
 	```lua
 	local ReplicatedStorage=game:GetService("ReplicatedStorage")
-	local ClassContainer=ReplicatedStorage.Utilities
+	local UtilityContainer=ReplicatedStorage.Utilities
 
-	DragonEngine:LoadUtilitiesIn(ClassContainer)
+	DragonEngine:LoadUtilitiesIn(UtilityContainer)
+	```
