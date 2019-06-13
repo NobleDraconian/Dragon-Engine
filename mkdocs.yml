@@ -10,7 +10,7 @@ repo_url: https://github.com/Reshiram110/Dragon-Engine
 edit_uri: ""
 
 # Theme
-theme: 
+theme:
   name: 'material'
   logo: Img/Dragon_Engine_Logo_White.png
 extra_css:
@@ -23,6 +23,7 @@ nav:
     - 'Framework core API': API/Core.md
     - 'Framework server API': API/Server.md
     - 'Framework client API': API/Client.md
+    - 'Test': API/Test.md
   - About :
     - 'License': About/License.md
     - 'Release Notes': About/ReleaseNotes.md
@@ -47,5 +48,9 @@ markdown_extensions:
       guess_lang: false
       pygments_style: 'monokai'
       noclasses: true
-  - footnotes
+  - def_list
   - meta
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.emoji
