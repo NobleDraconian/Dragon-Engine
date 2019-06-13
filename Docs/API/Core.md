@@ -207,7 +207,7 @@ Once loaded, the loaded Utility can be accessed via `DragonEngine.Utils.<Utility
 
 <hr/>
 
-### LoadClassesIn
+### LoadUtilitiesIn
 `DragonEngine:LoadUtilitiesIn(Container) -> LoadSuccess`
 
 **Arguments**
