@@ -23,7 +23,6 @@ nav:
     - 'Framework core API': API/Core.md
     - 'Framework server API': API/Server.md
     - 'Framework client API': API/Client.md
-    - 'Test': API/Test.md
   - About :
     - 'License': About/License.md
     - 'Release Notes': About/ReleaseNotes.md
