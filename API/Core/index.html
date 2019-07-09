@@ -89,7 +89,7 @@ this method will throw an error.</p>
 4
 5
 6</pre></div></td><td class="code"><div class="codehilite" style="background: #272822"><pre style="line-height: 125%"><span></span><span style="color: #75715e">-- Script 1</span>
-<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Class_LoadSuccess</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">DragonEngine:LoadClass(script.Dog)</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Class_LoadSuccess</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">DragonEngine:LoadClass(script.Dog)</span>
 
 <span style="color: #66d9ef">if</span> <span style="color: #f92672">not</span> <span style="color: #f8f8f2">Class_LoadSuccess</span> <span style="color: #66d9ef">then</span>
     <span style="color: #f8f8f2">warn(</span><span style="color: #e6db74">&quot;No one can make any doggos! D:&quot;</span><span style="color: #f8f8f2">)</span>
@@ -107,12 +107,12 @@ this method will throw an error.</p>
  8
  9
 10</pre></div></td><td class="code"><div class="codehilite" style="background: #272822"><pre style="line-height: 125%"><span></span><span style="color: #75715e">-- Script 2</span>
-<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Dog</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">DragonEngine.Classes.Dog</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Dog</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">DragonEngine.Classes.Dog</span>
 
-<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">MyDog</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">Dog.new()</span>
-<span style="color: #f8f8f2">MyDog.Name</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;Fido&quot;</span>
-<span style="color: #f8f8f2">MyDog.Age</span><span style="color: #f92672">=</span><span style="color: #ae81ff">4</span>
-<span style="color: #f8f8f2">MyDog.Color</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;Brown&quot;</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">MyDog</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">Dog.new()</span>
+<span style="color: #f8f8f2">MyDog.Name</span> <span style="color: #f92672">=</span> <span style="color: #e6db74">&quot;Fido&quot;</span>
+<span style="color: #f8f8f2">MyDog.Age</span> <span style="color: #f92672">=</span> <span style="color: #ae81ff">4</span>
+<span style="color: #f8f8f2">MyDog.Color</span> <span style="color: #f92672">=</span> <span style="color: #e6db74">&quot;Brown&quot;</span>
 
 <span style="color: #f8f8f2">MyDog:Bark()</span>
 <span style="color: #f8f8f2">MyDog:WalkTo(Vector3.new(</span><span style="color: #ae81ff">0</span><span style="color: #f8f8f2">,</span><span style="color: #ae81ff">0</span><span style="color: #f8f8f2">,</span><span style="color: #ae81ff">0</span><span style="color: #f8f8f2">))</span>
@@ -123,29 +123,41 @@ this method will throw an error.</p>
 <hr/>
 
 <h3 id="loadclassesin">LoadClassesIn</h3>
-<p><code>DragonEngine:LoadClassesIn(Container) -&gt; LoadSuccess</code></p>
+<p><code>DragonEngine:LoadClassesIn(Container,ThrowError) -&gt; ClassesLoaded,ErrorMessage,FaultyModule</code></p>
 <p><strong>Arguments</strong></p>
 <ol>
 <li><code>Instance</code> "Container" : The container that holds all of the class modules. Valid container types are <code>Folder</code>
                             instances and <code>Model</code> instances.</li>
+<li><code>bool</code> "ThrowError" : Determines whether or not an error will be thrown if any of the classes in the <code>Container</code>
+                         fail to load. Defaults to <code>false</code>.</li>
 </ol>
 <p><strong>Returns</strong></p>
-<p>This method returns <code>nil</code>.</p>
+<ol>
+<li><code>bool</code> "ClassesLoaded" : A <code>bool</code> describing whether or not the classes were loaded into the framework successfully.
+                             Will be <code>false</code> if an error occured while loading the classes into the framework and
+                            <code>ThrowError</code> was <code>true</code>.</li>
+<li><code>string</code> "ErrorMessage" : An error message containing the error that occured while loading the class modules. Will
+                             be <code>nil</code> if no error occured or <code>ThrowError</code> is <code>false</code>.</li>
+<li><code>Instance "ModuleScript"</code> "FaultyModule" : The class modulescript that failed to load.</li>
+</ol>
 <p><strong>Description</strong></p>
-<p>This method iterates through the given <code>Container</code> and all of its sub-containers and loads all of the modules it finds
-into the framework (<code>DragonEngine.Classes</code>)</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>If a module with the same name as any of the class modules in the container already exist in <code>DragonEngine.Classes</code>,
-this method will throw an error.</p>
-</div>
+<p>This method iterates through the given <code>Container</code> and all of its sub-containers and loads all of the class modules 
+it finds into the framework via <code>DragonEngine:LoadClass()</code>.</p>
 <details class="info"><summary>Example usage</summary><table class="codehilitetable"><tr><td><div class="linenodiv" style="background-color: #f0f0f0; padding-right: 10px"><pre style="line-height: 125%"><span></span>1
 2
 3
-4</pre></div></td><td class="code"><div class="codehilite" style="background: #272822"><pre style="line-height: 125%"><span></span><span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">ReplicatedStorage</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">game:GetService(</span><span style="color: #e6db74">&quot;ReplicatedStorage&quot;</span><span style="color: #f8f8f2">)</span>
-<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">ClassContainer</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">ReplicatedStorage.Classes</span>
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="codehilite" style="background: #272822"><pre style="line-height: 125%"><span></span><span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">ReplicatedStorage</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">game:GetService(</span><span style="color: #e6db74">&quot;ReplicatedStorage&quot;</span><span style="color: #f8f8f2">)</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">ClassContainer</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">ReplicatedStorage.Classes</span>
 
-<span style="color: #f8f8f2">DragonEngine:LoadClassesIn(ClassContainer)</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">LoadClasses_Success,ErrorMessage,FaultyClassModule</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">DragonEngine:LoadClassesIn(ClassContainer,</span><span style="color: #66d9ef">true</span><span style="color: #f8f8f2">)</span>
+
+<span style="color: #66d9ef">if</span> <span style="color: #f92672">not</span> <span style="color: #f8f8f2">LoadClasses_Success</span> <span style="color: #66d9ef">then</span>
+    <span style="color: #f8f8f2">print(</span><span style="color: #e6db74">&quot;Failed to load class &#39;&quot;</span><span style="color: #f92672">..</span><span style="color: #f8f8f2">FaultyClasseModule.Name</span><span style="color: #f92672">..</span><span style="color: #e6db74">&quot;&#39; : &quot;</span><span style="color: #f92672">..</span><span style="color: #f8f8f2">ErrorMessage)</span>
+<span style="color: #66d9ef">end</span>
 </pre></div>
 </td></tr></table>
 
@@ -177,7 +189,7 @@ this method will throw an error.</p>
 4
 5
 6</pre></div></td><td class="code"><div class="codehilite" style="background: #272822"><pre style="line-height: 125%"><span></span><span style="color: #75715e">-- Script 1</span>
-<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Utility_LoadSuccess</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">DragonEngine:LoadUtility(script.Table)</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Utility_LoadSuccess</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">DragonEngine:LoadUtility(script.Table)</span>
 
 <span style="color: #66d9ef">if</span> <span style="color: #f92672">not</span> <span style="color: #f8f8f2">Utility_LoadSuccess</span> <span style="color: #66d9ef">then</span>
     <span style="color: #f8f8f2">warn(</span><span style="color: #e6db74">&quot;No handy table functions. :(&quot;</span><span style="color: #f8f8f2">)</span>
@@ -192,9 +204,9 @@ this method will throw an error.</p>
 5
 6
 7</pre></div></td><td class="code"><div class="codehilite" style="background: #272822"><pre style="line-height: 125%"><span></span><span style="color: #75715e">-- Script 2</span>
-<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">PlayerService</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">game:GetService(</span><span style="color: #e6db74">&quot;Players&quot;</span><span style="color: #f8f8f2">)</span>
-<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Players</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">PlayerService:GetPlayers()</span>
-<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Table</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">DragonEngine.Utils.Table</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">PlayerService</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">game:GetService(</span><span style="color: #e6db74">&quot;Players&quot;</span><span style="color: #f8f8f2">)</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Players</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">PlayerService:GetPlayers()</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">Table</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">DragonEngine.Utils.Table</span>
 
 <span style="color: #f8f8f2">Table.Shuffle(Players)</span>
 <span style="color: #f8f8f2">print(</span><span style="color: #e6db74">&quot;The new order of players is &quot;</span><span style="color: #f92672">..</span><span style="color: #f8f8f2">Table.repr(Players))</span>
@@ -205,29 +217,41 @@ this method will throw an error.</p>
 <hr/>
 
 <h3 id="loadutilitiesin">LoadUtilitiesIn</h3>
-<p><code>DragonEngine:LoadUtilitiesIn(Container) -&gt; LoadSuccess</code></p>
+<p><code>DragonEngine:LoadUtilitiesIn(Container,ThrowError) -&gt; UtilitiesLoaded,ErrorMessage,FaultyModule</code></p>
 <p><strong>Arguments</strong></p>
 <ol>
-<li><code>Instance</code> "Container" : The container that holds all of the class modules. Valid container types are <code>Folder</code>
+<li><code>Instance</code> "Container" : The container that holds all of the Utility modules. Valid container types are <code>Folder</code>
                             instances and <code>Model</code> instances.</li>
+<li><code>bool</code> "ThrowError" : Determines whether or not an error will be thrown if any of the Utilities in the <code>Container</code>
+                         fail to load. Defaults to <code>false</code>.</li>
 </ol>
 <p><strong>Returns</strong></p>
-<p>This method returns <code>nil</code>.
-<strong>Description</strong></p>
-<p>This method iterates through the given <code>Container</code> and all of its sub-containers and loads all of the modules it finds
-into the framework (<code>DragonEngine.Utils</code>).</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>If a module with the same name as any of the class modules in the container already exist in <code>DragonEngine.Utils</code>,
-this method will throw an error.</p>
-</div>
+<ol>
+<li><code>bool</code> "UtilitiesLoaded" : A <code>bool</code> describing whether or not the utlities were loaded into the framework successfully.
+                             Will be <code>false</code> if an error occured while loading the utilities into the framework and
+                            <code>ThrowError</code> was <code>true</code>.</li>
+<li><code>string</code> "ErrorMessage" : An error message containing the error that occured while loading the Utility modules. Will
+                             be <code>nil</code> if no error occured or <code>ThrowError</code> is <code>false</code>.</li>
+<li><code>Instance "ModuleScript"</code> "FaultyModule" : The Utility modulescript that failed to load.</li>
+</ol>
+<p><strong>Description</strong></p>
+<p>This method iterates through the given <code>Container</code> and all of its sub-containers and loads all of the Utility modules 
+it finds into the framework via <code>DragonEngine:LoadUtility()</code>.</p>
 <details class="info"><summary>Example usage</summary><table class="codehilitetable"><tr><td><div class="linenodiv" style="background-color: #f0f0f0; padding-right: 10px"><pre style="line-height: 125%"><span></span>1
 2
 3
-4</pre></div></td><td class="code"><div class="codehilite" style="background: #272822"><pre style="line-height: 125%"><span></span><span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">ReplicatedStorage</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">game:GetService(</span><span style="color: #e6db74">&quot;ReplicatedStorage&quot;</span><span style="color: #f8f8f2">)</span>
-<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">UtilityContainer</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">ReplicatedStorage.Utilities</span>
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="codehilite" style="background: #272822"><pre style="line-height: 125%"><span></span><span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">ReplicatedStorage</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">game:GetService(</span><span style="color: #e6db74">&quot;ReplicatedStorage&quot;</span><span style="color: #f8f8f2">)</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">UtilityContainer</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">ReplicatedStorage.Utilities</span>
 
-<span style="color: #f8f8f2">DragonEngine:LoadUtilitiesIn(UtilityContainer)</span>
+<span style="color: #66d9ef">local</span> <span style="color: #f8f8f2">LoadUtilities_Success,ErrorMessage,FaultyUtilityModule</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">DragonEngine:LoadUtilitiesIn(UtilityContainer,</span><span style="color: #66d9ef">true</span><span style="color: #f8f8f2">)</span>
+
+<span style="color: #66d9ef">if</span> <span style="color: #f92672">not</span> <span style="color: #f8f8f2">LoadUtilities_Success</span> <span style="color: #66d9ef">then</span>
+    <span style="color: #f8f8f2">print(</span><span style="color: #e6db74">&quot;Failed to load Utility &#39;&quot;</span><span style="color: #f92672">..</span><span style="color: #f8f8f2">FaultyUtilityeModule.Name</span><span style="color: #f92672">..</span><span style="color: #e6db74">&quot;&#39; : &quot;</span><span style="color: #f92672">..</span><span style="color: #f8f8f2">ErrorMessage)</span>
+<span style="color: #66d9ef">end</span>
 </pre></div>
 </td></tr></table>
 
