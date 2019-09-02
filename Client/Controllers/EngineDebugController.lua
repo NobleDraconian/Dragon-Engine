@@ -11,6 +11,7 @@ local EngineDebugController={}
 -- Roblox Services --
 ---------------------
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local RunService=game:GetService("RunService")
 
 -------------
 -- DEFINES --
@@ -33,7 +34,7 @@ function EngineDebugController:Init()
 		local CommandWhitelist=self.Services.EngineDebugService:GetCommandWhitelist()
 
 		if CommandWhitelist[Context.Group]~=nil then --Wasn't a custom devloper Group
-			local CanExecute=false
+			local CanExecute=RunService:IsStudio()
 
 			for Index=1,#CommandWhitelist[Context.Group] do
 				if CommandWhitelist[Context.Group][Index]==Context.Executor.UserId then

@@ -11,6 +11,7 @@ EngineEngineDebugService.Client.Server=EngineEngineDebugService
 ---------------------
 -- Roblox Services --
 ---------------------
+local RunService=game:GetService("RunService")
 
 --------------
 -- REQUIRES --
@@ -77,7 +78,7 @@ function EngineEngineDebugService:Init()
 	----------------------------------
 	Cmdr.Registry:RegisterHook("BeforeRun",function(Context)
 		if CommandWhitelist[Context.Group]~=nil then --Wasn't a custom devloper Group
-			local CanExecute=false
+			local CanExecute=RunService:IsStudio()
 
 			for Index=1,#CommandWhitelist[Context.Group] do
 				if CommandWhitelist[Context.Group][Index]==Context.Executor.UserId then
