@@ -2,42 +2,57 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
      <loc>https://Reshiram110.github.io/Dragon-Engine/</loc>
-     <lastmod>2019-07-08</lastmod>
+     <lastmod>2019-09-04</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://Reshiram110.github.io/Dragon-Engine/Guide/Installation/</loc>
+     <lastmod>2019-09-04</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://Reshiram110.github.io/Dragon-Engine/API/Core/</loc>
-     <lastmod>2019-07-08</lastmod>
+     <lastmod>2019-09-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://Reshiram110.github.io/Dragon-Engine/API/Server/</loc>
-     <lastmod>2019-07-08</lastmod>
+     <lastmod>2019-09-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://Reshiram110.github.io/Dragon-Engine/API/Client/</loc>
-     <lastmod>2019-07-08</lastmod>
+     <lastmod>2019-09-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://Reshiram110.github.io/Dragon-Engine/About/License/</loc>
-     <lastmod>2019-07-08</lastmod>
+     <lastmod>2019-09-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://Reshiram110.github.io/Dragon-Engine/About/ReleaseNotes/</loc>
-     <lastmod>2019-07-08</lastmod>
+     <lastmod>2019-09-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://Reshiram110.github.io/Dragon-Engine/About/Contributing/</loc>
-     <lastmod>2019-07-08</lastmod>
+     <lastmod>2019-09-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://Reshiram110.github.io/Dragon-Engine/Test/</loc>
-     <lastmod>2019-07-08</lastmod>
+     <lastmod>2019-09-04</lastmod>
      <changefreq>daily</changefreq>
     </url>
 </urlset>
