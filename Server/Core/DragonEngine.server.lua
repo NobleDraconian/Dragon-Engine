@@ -108,9 +108,11 @@ function DragonEngine:LoadService(ServiceModule)
 		----------------------------------
 		-- Generating service endpoints --
 		----------------------------------
-		if Service.Client~=nil then --The service has client APIs
-			local EndpointFolder=Instance.new('Folder',Service_Endpoints);EndpointFolder.Name=ServiceName --Container for remote functions/events so clients can access the service client API.
+		local EndpointFolder=Instance.new('Folder',Service_Endpoints) --Container for remote functions/events so clients can access the service client API.
+		EndpointFolder.Name=ServiceName
+		Service._EndpointFolder=EndpointFolder
 
+		if Service.Client~=nil then --The service has client APIs
 			for FunctionName,Function in pairs(Service.Client) do
 				if type(Function)=="function" then
 					local RemoteFunction=Instance.new('RemoteFunction',EndpointFolder);RemoteFunction.Name=FunctionName
@@ -121,7 +123,6 @@ function DragonEngine:LoadService(ServiceModule)
 					self:DebugLog("Registered endpoint '"..ServiceName.."."..FunctionName.."'")
 				end
 			end
-			Service._EndpointFolder=EndpointFolder
 		end
 
 		---------------------------------------------
