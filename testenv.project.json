@@ -1,0 +1,35 @@
+{
+	"name":"Dragon Engine",
+	"tree":{
+		"$className":"DataModel",
+
+		"ReplicatedStorage":{
+			"$className":"ReplicatedStorage",
+
+			"DragonEngine":{
+				"$path":"src/Shared",
+
+				"lib":{"$path":"Packages/lib"}
+			}
+		},
+
+		"ServerScriptService":{
+			"$className":"ServerScriptService",
+
+			"DragonEngine":{"$path":"src/Server"}
+		},
+
+		"StarterPlayer":{
+			"$className":"StarterPlayer",
+
+			"StarterPlayerScripts":{
+				"$className":"StarterPlayerScripts",
+
+				"DragonEngine":{
+					"$path":"src/Client"
+				}
+			}
+		}
+		
+	}
+}

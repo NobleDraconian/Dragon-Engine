@@ -1,35 +1,10 @@
 {
-	"name":"Dragon Engine",
-	"tree":{
-		"$className":"DataModel",
+	"name" : "DragonEngine",
+	"tree": {
+		"$className" : "Folder",
 
-		"ReplicatedStorage":{
-			"$className":"ReplicatedStorage",
-
-			"DragonEngine":{
-				"$path":"./Shared",
-
-				"lib":{"$path":"./Submodules/lib"}
-			}
-		},
-
-		"ServerScriptService":{
-			"$className":"ServerScriptService",
-
-			"DragonEngine":{"$path":"./Server"}
-		},
-
-		"StarterPlayer":{
-			"$className":"StarterPlayer",
-
-			"StarterPlayerScripts":{
-				"$className":"StarterPlayerScripts",
-
-				"DragonEngine":{
-					"$path":"./Client"
-				}
-			}
-		}
-		
+		"Server" : {"$path" : "src/Server"},
+		"Client" : {"$path" : "src/Client"},
+		"Shared" : {"$path" : "src/Shared"}
 	}
 }
