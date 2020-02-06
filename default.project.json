@@ -5,6 +5,10 @@
 
 		"Server" : {"$path" : "src/Server"},
 		"Client" : {"$path" : "src/Client"},
-		"Shared" : {"$path" : "src/Shared"}
+		"Shared" : {
+			"$path" : "src/Shared",
+			
+			"lib" : {"$path" : "Packages/lib"}
+		}
 	}
 }
