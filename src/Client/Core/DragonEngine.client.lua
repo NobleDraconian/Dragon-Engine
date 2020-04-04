@@ -52,6 +52,7 @@ end
 -- DEFINES --
 -------------
 local Service_Endpoints=ReplicatedStorage.DragonEngine.Network.Service_Endpoints
+local Service_ClientEndpoints = ReplicatedStorage.DragonEngine.Network.Service_ClientEndpoints
 
 local Service_Loaded=ReplicatedStorage.DragonEngine.Network.ServiceLoaded.OnClientEvent --Fired when a service is loaded.
 DragonEngine.ServiceLoaded=Service_Loaded
@@ -76,7 +77,8 @@ local function ConnectToServiceEndpoints(ServiceName)
 	-------------
 	-- DEFINES --
 	-------------
-	local ServiceFolder=Service_Endpoints[ServiceName]
+	local Service_EndpointFolder = Service_Endpoints[ServiceName]
+	local Service_ClientEndpointFolder = Service_ClientEndpoints[ServiceName]
 
 	-----------------------------
 	-- Connecting to endpoints --
@@ -84,21 +86,34 @@ local function ConnectToServiceEndpoints(ServiceName)
 	DragonEngine:DebugLog("Connecting to endpoints for service '"..ServiceName.."'")
 	local Service={}
 
-	for _,RemoteFunction in pairs(ServiceFolder:GetChildren()) do
+	for _,RemoteFunction in pairs(Service_EndpointFolder:GetChildren()) do
 		if RemoteFunction:IsA("RemoteFunction") then
-			DragonEngine:DebugLog("Connecting to remote function '"..ServiceFolder.Name.."."..RemoteFunction.Name.."'...")
+			DragonEngine:DebugLog("Connecting to remote function '"..Service_EndpointFolder.Name.."."..RemoteFunction.Name.."'...")
 
 			Service[RemoteFunction.Name]=function(self,...) --We seperate 'self' to ommit it from the server call.
 				return RemoteFunction:InvokeServer(...)
 			end
 		elseif RemoteFunction:IsA("RemoteEvent") then
-			DragonEngine:DebugLog("Registered remote event '"..ServiceFolder.Name.."."..RemoteFunction.Name.."'.")
+			DragonEngine:DebugLog("Registered remote event '"..Service_EndpointFolder.Name.."."..RemoteFunction.Name.."'.")
 			Service[RemoteFunction.Name]=RemoteFunction.OnClientEvent
 		end
 	end
 
-	DragonEngine.Services[ServiceFolder.Name]=Service
+	DragonEngine.Services[Service_EndpointFolder.Name]=Service
 	DragonEngine:DebugLog("Connected to all endpoints for service '"..ServiceName.."'.")
+
+	------------------------------------------
+	-- Registering service client endpoints --
+	------------------------------------------
+	DragonEngine:DebugLog("Registering client endpoints for service '"..ServiceName.."'")
+
+	for _,RemoteFunction in pairs(Service_ClientEndpointFolder:GetChildren()) do
+		if RemoteFunction:IsA("RemoteFunction") then
+			Service[RemoteFunction.Name] = RemoteFunction
+
+			DragonEngine:DebugLog("Registered client endpoint '"..RemoteFunction.Name.."' for service '"..ServiceName.."'")
+		end
+	end
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
