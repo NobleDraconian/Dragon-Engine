@@ -35,7 +35,9 @@ local Service_Endpoints=Instance.new('Folder',ReplicatedStorage.DragonEngine.Net
 Service_Endpoints.Name="Service_Endpoints"
 local Service_Events=Instance.new('Folder',ServerScriptService.DragonEngine) --A folder containing the server sided events for services.
 Service_Events.Name="Service_Events"
-
+local Service_ClientEndpoints = Instance.new('Folder')
+	  Service_ClientEndpoints.Name = "Service_ClientEndpoints"
+	  Service_ClientEndpoints.Parent = ReplicatedStorage.DragonEngine.Network
 local Service_Loaded_ServerEvent=Instance.new('BindableEvent') --Bindable event for signalling server services when a service is loaded.
 DragonEngine.ServiceLoaded=Service_Loaded_ServerEvent.Event
 local Service_Unloaded_ServerEvent=Instance.new('BindableEvent') --Bindable event for signalling server services when a service is unloaded.
@@ -124,6 +126,14 @@ function DragonEngine:LoadService(ServiceModule)
 				end
 			end
 		end
+
+		---------------------------------
+		-- Generating client endpoints --
+		---------------------------------
+		local Client_EndpointFolder = Instance.new('Folder')
+		      Client_EndpointFolder.Name = ServiceName
+			  Client_EndpointFolder.Parent = Service_ClientEndpoints
+		Service._ClientEndpointFolder = Client_EndpointFolder
 
 		---------------------------------------------
 		-- Adding service to DragonEngine.Services --
@@ -341,6 +351,29 @@ function DragonEngine:StopService(ServiceName)
 	return true
 end
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : RegisterClientEndpoint
+-- @Description : Registers a client endpoint for the service calling that the server can invoke to get client information.
+--!               USE THIS WITH CAUTION. USING THE CLIENT AS A SOURCE OF TRUTH IS DANGEROUS.
+-- @Params : string "EndpointName" - The name to assign to the endpoint
+-- @Returns : Instance <RemoteFunction> "RemoteFunction" - The registered client endpoint.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:RegisterClientEndpoint(EndpointName)
+	
+	----------------
+	-- Assertions --
+	----------------
+	assert(EndpointName ~= nil, "[Dragon Engine Server] RegisterClientEndpoint() : string Expected for 'EndpointName', got nil instead.")
+	assert(typeof(EndpointName) == "string", "[Dragon Engine Server] RegisterClientEndpoint() : string expected for 'EndpointName', got "..typeof(EndpointName).." instead.")
+
+	local RemoteFunction = Instance.new('RemoteFunction')
+		  RemoteFunction.Name = EndpointName
+		  RemoteFunction.Parent = self._ClientEndpointFolder
+
+	self:DebugLog("Registered client endpoint '"..EndpointName.."' for service '"..self.Name.."'")
+
+	return RemoteFunction
+end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : RegisterServiceClientEvent
