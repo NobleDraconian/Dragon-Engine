@@ -1,2 +1,6 @@
-
 \.vscode/
+selene.toml
+roblox.toml
+*.rbxlx
+*.rbxl
+*.lock
