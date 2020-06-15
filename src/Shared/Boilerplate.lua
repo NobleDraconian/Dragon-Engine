@@ -62,12 +62,16 @@ function BoilerPlate.RecurseFind(Root,ItemType)
 	if typeof(Root)=="Instance" then
 		if Root:IsA("Folder") or Root:IsA("Model") then
 			for _,Item in pairs(BoilerPlate.Recurse(Root)) do
-				if Item:IsA(ItemType) then table.insert(Items,Item) end
+				if Item:IsA(ItemType) then 
+					table.insert(Items,Item) 
+				end
 			end
 		end
 	elseif typeof(Root)=="table" then
 		for _,Item in pairs(BoilerPlate.Recurse(Root)) do
-			if typeof(Item)==ItemType then table.insert(Items,Item) end
+			if typeof(Item)==ItemType then 
+				table.insert(Items,Item) 
+			end
 		end
 	end
 
@@ -89,12 +93,16 @@ function BoilerPlate.RecurseFilter(Root,ItemType)
 	if typeof(Root)=="Instance" then
 		if Root:IsA("Folder") or Root:IsA("Model") then
 			for _,Item in pairs(BoilerPlate.Recurse(Root)) do
-				if not Item:IsA(ItemType) then table.insert(Items,Item) end
+				if not Item:IsA(ItemType) then 
+					table.insert(Items,Item) 
+				end
 			end
 		end
 	elseif typeof(Root)=="table" then
 		for _,Item in pairs(BoilerPlate.Recurse(Root)) do
-			if typeof(Item)~=ItemType then table.insert(Items,Item) end
+			if typeof(Item)~=ItemType then 
+				table.insert(Items,Item) 
+			end
 		end
 	end
 
