@@ -20,9 +20,15 @@ local RunService=game:GetService("RunService")
 -------------
 local MAX_LATENCY=5 --The max time a ping will wait until auto failing. Can be overridden by the PingClient:(_,TimeOut) parameter.
 
-local RemotesFolder=Instance.new('Folder',ReplicatedStorage.DragonEngine.Network);RemotesFolder.Name="NetworkService"
-local ClientPing=Instance.new('RemoteEvent',RemotesFolder);ClientPing.Name="ClientPing" --Used to ping clients
-local ServerPing=Instance.new('RemoteEvent',RemotesFolder);ServerPing.Name="ServerPing" --Used to respond to pinging clients
+local RemotesFolder=Instance.new('Folder')
+	  RemotesFolder.Name="NetworkService"
+	  RemotesFolder.Parent=ReplicatedStorage.DragonEngine.Network
+local ClientPing=Instance.new('RemoteEvent') --Used to ping clients
+      ClientPing.Name="ClientPing"
+      ClientPing.Parent = RemotesFolder
+local ServerPing=Instance.new('RemoteEvent') --Used to respond to pinging clients
+	  ServerPing.Name="ServerPing"
+	  ServerPing.Parent=RemotesFolder
 
 local Connections={} --Holds any event listener connections in case the service is stopped/unloaded.
 
@@ -43,7 +49,7 @@ function NetworkService:PingClient(Player,TimeOut)
 	local StartTick=tick()
 	
 	local PingResponse;
-	PingResponse=ClientPing.OnServerEvent:connect(function(Client,ResponseID)
+	PingResponse=ClientPing.OnServerEvent:connect(function(_,ResponseID)
 		if ResponseID==PingID then
 			PingResponse:Disconnect()
 			EndTick=tick()
