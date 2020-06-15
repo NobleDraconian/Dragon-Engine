@@ -1,0 +1,13 @@
+{
+	"name" : "DragonEngine",
+
+	"tree" : {
+		"$className": "Folder",
+		"$path" : "src/Shared",
+		"$properties" : {
+			"Name" : "DragonEngine"
+		},
+				
+		"lib" : {"$path" : "Packages/lib"}
+	}
+}

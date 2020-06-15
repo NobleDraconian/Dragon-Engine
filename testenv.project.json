@@ -3,32 +3,33 @@
 	"tree":{
 		"$className":"DataModel",
 
-		"ReplicatedStorage":{
+		"ReplicatedStorage" : {
 			"$className":"ReplicatedStorage",
 
-			"DragonEngine":{
-				"$path":"src/Shared",
-
-				"lib":{"$path":"Packages/lib"}
+			"FrameworkShared" : {
+				"$path" : "shared.project.json"
 			}
 		},
 
-		"ServerScriptService":{
+		"ServerScriptService" : {
 			"$className":"ServerScriptService",
 
-			"DragonEngine":{"$path":"src/Server"}
+			"FrameworkServer" : {
+				"$path" : "server.project.json"
+			}
 		},
 
-		"StarterPlayer":{
-			"$className":"StarterPlayer",
+		"StarterPlayer" : {
+			"$className" : "StarterPlayer",
 
-			"StarterPlayerScripts":{
+			"StarterPlayerScripts" : {
 				"$className":"StarterPlayerScripts",
 
-				"DragonEngine":{
-					"$path":"src/Client"
+				"FrameworkClient" : {
+					"$path" : "client.project.json"
 				}
 			}
+		},
 
 		"Workspace" : {
 			"$className" : "Workspace",
@@ -59,7 +60,5 @@
 			},
 			"$path" : "Assets/TestEnv/Lighting"
 		}	
-	}
-		
 	}
 }

@@ -1,0 +1,11 @@
+{
+	"name" : "DragonEngine",
+
+	"tree" : {
+		"$className": "Folder",
+		"$path" : "src/Server",
+		"$properties" : {
+			"Name" : "DragonEngine"
+		}
+	}
+}
