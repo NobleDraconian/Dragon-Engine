@@ -478,8 +478,9 @@ print("")
 print("**** LOADING UTIL MODULES ****")
 print("")
 for _,ModulePaths in pairs(EngineConfigs.ClientPaths.ModulePaths) do
-	DragonEngine:LoadUtilitiesIn(Path)
-end
+	for _,ModulePath in pairs(ModulePaths) do
+		DragonEngine:LazyLoadModulesIn(ModulePath)
+	end
 --[[ Shared classes ]]--
 print("")
 print("**** LOADING CLASS MODULES ****")
