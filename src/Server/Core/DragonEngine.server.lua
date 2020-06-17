@@ -16,6 +16,10 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local DragonEngine = require(ReplicatedStorage.DragonEngine.EngineCore)
 local ENGINE_LOGO = require(ReplicatedStorage.DragonEngine.Logo)
 local Boilerplate = require(ReplicatedStorage.DragonEngine.Boilerplate)
+local EngineConfigs = {
+	Settings = require(ReplicatedStorage.DragonEngine.Settings.EngineSettings),
+	ServerPaths = require(ReplicatedStorage.DragonEngine.Settings.ServerPaths),
+}
 
 -------------
 -- DEFINES --
@@ -52,7 +56,7 @@ DragonEngine.ServiceUnloaded = Service_Unloaded_ServerEvent.Event
 -- Boilerplate
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local function IsModuleIgnored(Module)
-	for _,ModuleName in pairs(DragonEngine.Config.IgnoredModules) do
+	for _,ModuleName in pairs(EngineConfigs.Settings.IgnoredModules) do
 		if ModuleName == Module.Name then
 			return true
 		end
@@ -451,102 +455,89 @@ end
 ----------------------
 -- Loading Settings --
 ----------------------
+local Developer_SettingsFolder = ReplicatedStorage:FindFirstChild("DragonEngine_Configs")
+if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
+	local Success,Error = pcall(function()
+		if Developer_SettingsFolder:FindFirstChild("EngineSettings") ~= nil then
+			local Developer_EngineConfigs = require(Developer_SettingsFolder.EngineSettings)
 
---[[ Load default settings ]]--
-local DefSettingsSuccess,DefSettingsError = pcall(function()
-	DragonEngine.Config = require(ReplicatedStorage.DragonEngine.Settings.EngineSettings)
-	DragonEngine.Config.Paths = require(ReplicatedStorage.DragonEngine.Settings.ServerPaths)
-end)
-assert(DefSettingsSuccess == true, DefSettingsSuccess == true or "[Dragon Engine Server] An error occured while loading settings : "..DefSettingsError)
-
---[[ Load user settings ]]--
-if ReplicatedStorage:FindFirstChild("DragonEngine_UserSettings") ~= nil then
-	local SettingsFolder = ReplicatedStorage.DragonEngine_UserSettings
-
-	local LoadSuccess,Error = pcall(function()
-		if SettingsFolder:FindFirstChild("EngineSettings") ~= nil then
-			local EngineSettings = require(SettingsFolder.EngineSettings)
-
-			for SettingName,SettingValue in pairs(EngineSettings) do
-				if DragonEngine.Config[SettingName] ~= nil then --Setting exists, override with developer value.
-					DragonEngine.Config[SettingName] = SettingValue
-				else --Setting does not exist.
-					error("Attempt to override non-existant setting!")
+			EngineConfigs.Settings.ShowLogoInOutput = Developer_EngineConfigs.ShowLogoInOutput
+			EngineConfigs.Settings.Debug = Developer_EngineConfigs.Debug
+			
+			for ModuleLocationType,ModuleNames in pairs(Developer_EngineConfigs.IgnoredModules) do
+				for _,ModuleName in pairs(ModuleNames) do
+					table.insert(EngineConfigs.Settings.IgnoredModules[ModuleLocationType],ModuleName)
 				end
 			end
 		end
 
-		if SettingsFolder:FindFirstChild("ServerPaths") ~= nil then
-			local ServerPaths = require(SettingsFolder.ServerPaths)
+		if Developer_SettingsFolder:FindFirstChild("ServerPaths") ~= nil then
+			local Developer_ServerPaths = require(Developer_SettingsFolder.ServerPaths)
 
-			for PathName,PathValues in pairs(ServerPaths) do
-				for _,PathValue in pairs(PathValues) do
-					table.insert(DragonEngine.Config.Paths[PathName],PathValue)
+			for ModuleLocationType,ModulePaths in pairs(Developer_ServerPaths.ModulePaths) do
+				for _,ModulePath in pairs(ModulePaths) do
+					table.insert(EngineConfigs.ServerPaths.ModulePaths[ModuleLocationType],ModulePath)
 				end
+			end
+
+			for _,ServicePath in pairs(Developer_ServerPaths.ServicePaths) do
+				table.insert(EngineConfigs.ServerPaths.ServicePaths,ServicePath)
 			end
 		end
 	end)
-
-	assert(LoadSuccess == true,LoadSuccess == true or "[Dragon Engine Server] An error occured while loading developer-specified settings : "..Error)
+	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..Error)
 end
+DragonEngine.Config = EngineConfigs
 
-if DragonEngine.Config["ShowLogoInOutput"] then
+if EngineConfigs.Settings.ShowLogoInOutput then
 	print(ENGINE_LOGO)
 end
-if DragonEngine.Config["Debug"] then
+if EngineConfigs.Settings.Debug then
 	warn("[Dragon Engine Server] Debug enabled. Logging will be verbose.")
 end
 
 -------------------
 -- Loading Enums --
 -------------------
-for EnumName,EnumVal in pairs(DragonEngine.Config.Enums) do
+for EnumName,EnumVal in pairs(EngineConfigs.Settings.Enums) do
 	DragonEngine:DefineEnum(EnumName,EnumVal)
 end
 
------------------------------------
--- Loading services,classes,etc. --
------------------------------------
-local Paths = DragonEngine.Config.Paths
+---------------------
+-- Loading modules --
+---------------------
+print("")
+print("**** Loading modules ****")
+print("")
+for _,ModulePaths in pairs(EngineConfigs.ServerPaths.ModulePaths) do
+	for _,ModulePath in pairs(ModulePaths) do
+		DragonEngine:LazyLoadModulesIn(ModulePath)
+	end
+end
+DragonEngine:DebugLog("All modules lazy-loaded!")
 
---[[ Utils ]]--
+-------------------------------------------------
+--  Loading, initializing and running services --
+-------------------------------------------------
 print("")
-print("**** LOADING UTIL MODULES ****")
+print("**** Loading services ****")
 print("")
-for _,Path in pairs(Paths.Utils) do
-	DragonEngine:LoadUtilitiesIn(Path)
+for _,ServicePath in pairs(EngineConfigs.ServerPaths.ServicePaths) do
+	DragonEngine:LoadServicesIn(ServicePath)
 end
---[[ Shared classes ]]--
-print("")
-print("**** LOADING CLASS MODULES ****")
-print("")
-for _,Path in pairs(Paths.SharedClasses) do
-	DragonEngine:LoadClassesIn(Path)
-end
---[[ Server classes ]]--
-print("")
-print("**** LOADING SERVER CLASS MODULES ****")
-print("")
-for _,Path in pairs(Paths.ServerClasses) do
-	DragonEngine:LoadClassesIn(Path)
-end
+DragonEngine:DebugLog("All services loaded!")
 
---[[ Loading services into the engine and initializing them ]]--
 print("")
-print("**** LOADING SERVICES ****")
+print("**** Initializing services ****")
 print("")
-DragonEngine:DebugLog("Loading and initializing services...")
-for _,Path in pairs(Paths.Services) do
-	DragonEngine:LoadServicesIn(Path)
-end
 for ServiceName,_ in pairs(DragonEngine.Services) do
 	DragonEngine:InitializeService(ServiceName)
 end
-DragonEngine:DebugLog("All services loaded and initialized!")
+DragonEngine:DebugLog("All services initialized!")
 
---[[ Running services ]]--
-DragonEngine:DebugLog()
-DragonEngine:DebugLog("Starting services...")
+print("")
+print("**** Starting services ****")
+print("")
 for ServiceName,Service in pairs(DragonEngine.Services) do
 	if Service.Initialized then
 		DragonEngine:StartService(ServiceName)
@@ -554,13 +545,13 @@ for ServiceName,Service in pairs(DragonEngine.Services) do
 end
 DragonEngine:DebugLog("All services running!")
 
---[[ Engine loaded ]]--
+------------------------------------------
+-- Indicating that the engine is loaded --
+------------------------------------------
 local Engine_Loaded = Instance.new('BoolValue')
-Engine_Loaded.Name = "_Loaded"
-Engine_Loaded.Value = true
-Engine_Loaded.Parent = ReplicatedStorage.DragonEngine
+      Engine_Loaded.Name = "_Loaded"
+      Engine_Loaded.Value = true
+      Engine_Loaded.Parent = ReplicatedStorage.DragonEngine
 
-print("")
-DragonEngine:DebugLog("Engine config : ")
-DragonEngine:DebugLog(DragonEngine.Utils.Table.repr(DragonEngine.Config,{pretty = true}))
+shared.DragonEngine = DragonEngine
 print("Dragon Engine "..DragonEngine.Version.." loaded!")

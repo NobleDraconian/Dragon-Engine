@@ -14,7 +14,7 @@ return{
 	Run=function(Context,ControllerRef)
 		Context:Reply("Loading controller '"..ControllerRef.."'...")
 
-		local ControllerModule=shared.DragonEngine.Utils.Instance.GetInstanceFromPath(ControllerRef)
+		local ControllerModule=shared.DragonEngine.Modules.Instance.GetInstanceFromPath(ControllerRef)
 		if ControllerModule~=nil then
 			local Success,Error=shared.DragonEngine:LoadController(ControllerModule)
 			if Success then
