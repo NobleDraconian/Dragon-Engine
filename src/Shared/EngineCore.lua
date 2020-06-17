@@ -27,7 +27,7 @@ local DragonEngine = {
 	Enum = {}, --Contains all custom Enums.
 	Config = {}, --Holds the engines settings.
 
-	Version = "3.1.0"
+	Version = "0.1.0" --TODO : Replace this with a valueobject that stores the latest git tag inside it via remodel.
 }
 
 local ModuleLocations = {} -- Stores the locations of modulescripts to be lazy-loaded
