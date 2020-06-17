@@ -537,8 +537,8 @@ Service_Unloaded:connect(function(ServiceName)
 	DragonEngine.Services[ServiceName] = nil
 end)
 
---[[ Engine loaded ]]--
-print("")
-DragonEngine:DebugLog("Engine config : ")
-DragonEngine:DebugLog(DragonEngine.Utils.Table.repr(DragonEngine.Config,{pretty = true}))
+------------------------------------------
+-- Indicating that the engine is loaded --
+------------------------------------------
+shared.DragonEngine = DragonEngine
 print("Dragon Engine "..DragonEngine.Version.." loaded!")

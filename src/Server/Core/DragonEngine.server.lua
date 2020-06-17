@@ -545,13 +545,13 @@ for ServiceName,Service in pairs(DragonEngine.Services) do
 end
 DragonEngine:DebugLog("All services running!")
 
---[[ Engine loaded ]]--
+------------------------------------------
+-- Indicating that the engine is loaded --
+------------------------------------------
 local Engine_Loaded = Instance.new('BoolValue')
-Engine_Loaded.Name = "_Loaded"
-Engine_Loaded.Value = true
-Engine_Loaded.Parent = ReplicatedStorage.DragonEngine
+      Engine_Loaded.Name = "_Loaded"
+      Engine_Loaded.Value = true
+      Engine_Loaded.Parent = ReplicatedStorage.DragonEngine
 
-print("")
-DragonEngine:DebugLog("Engine config : ")
-DragonEngine:DebugLog(DragonEngine.Utils.Table.repr(DragonEngine.Config,{pretty = true}))
+shared.DragonEngine = DragonEngine
 print("Dragon Engine "..DragonEngine.Version.." loaded!")
