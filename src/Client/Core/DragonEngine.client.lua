@@ -468,30 +468,24 @@ for EnumName,EnumVal in pairs(EngineConfigs.Settings.Enums) do
 	DragonEngine:DefineEnum(EnumName,EnumVal)
 end
 
--------------------------------------
--- Loading controllers,classes,etc.--
--------------------------------------
-local Paths = DragonEngine.Config["Paths"]
-
---[[ Utils ]]--
+---------------------
+-- Loading modules --
+---------------------
 print("")
-print("**** LOADING UTIL MODULES ****")
+print("**** Loading modules ****")
 print("")
 for _,ModulePaths in pairs(EngineConfigs.ClientPaths.ModulePaths) do
 	for _,ModulePath in pairs(ModulePaths) do
 		DragonEngine:LazyLoadModulesIn(ModulePath)
 	end
---[[ Shared classes ]]--
-print("")
-print("**** LOADING CLASS MODULES ****")
-print("")
-for _,Path in pairs(Paths.SharedClasses) do
-	DragonEngine:LoadClassesIn(Path)
 end
+DragonEngine:DebugLog("All modules lazy-loaded!")
 
---[[ Connecting to remote service endpoints ]]--
+--------------------------------------------
+-- Connecting to remote service endpoints --
+--------------------------------------------
 print("")
-print("**** CONNECTING TO SERVICE ENDPOINTS ****")
+print("**** Connecting to service endpoints ****")
 print("")
 DragonEngine:DebugLog("Connecting to service endpoints...")
 for _,ServiceFolder in pairs(Service_Endpoints:GetChildren()) do
@@ -499,28 +493,35 @@ for _,ServiceFolder in pairs(Service_Endpoints:GetChildren()) do
 end
 DragonEngine:DebugLog("All endpoints connected to!")
 
---[[ Loading controllers into the engine and initializing them ]]--
+----------------------------------------------------
+--  Loading, initializing and running controllers --
+----------------------------------------------------
 print("")
-print("**** LOADING CONTROLLERS ****")
+print("**** Loading controllers ****")
 print("")
 for _,ControllerPath in pairs(EngineConfigs.ClientPaths.ControllerPaths) do
 	DragonEngine:LoadControllersIn(ControllerPath)
-	DragonEngine:LoadControllersIn(Path)
 end
+DragonEngine:DebugLog("All controllers loaded!")
+
+print("")
+print("**** Initializing controllers ****")
+print("")
 for ControllerName,_ in pairs(DragonEngine.Controllers) do
 	DragonEngine:InitializeController(ControllerName)
 end
-DragonEngine:DebugLog("All controllers loaded and initialized!")
+DragonEngine:DebugLog("All controllersf initialized!")
 
---[[ Running controllers ]]--
-DragonEngine:DebugLog()
-DragonEngine:DebugLog("Starting controllers...")
+print("")
+print("**** Starting controllers ****")
+print("")
 for ControllerName,Controller in pairs(DragonEngine.Controllers) do
 	if Controller.Initialized then
 		DragonEngine:StartController(ControllerName)
 	end
 end
-DragonEngine:DebugLog("All controllers running!")
+DragonEngine:DebugLog("All services running!")
+
 
 ---------------------------------------------
 -- Listening for service loading/unloading --

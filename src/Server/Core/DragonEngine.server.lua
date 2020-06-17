@@ -503,50 +503,41 @@ for EnumName,EnumVal in pairs(EngineConfigs.Settings.Enums) do
 	DragonEngine:DefineEnum(EnumName,EnumVal)
 end
 
------------------------------------
--- Loading services,classes,etc. --
------------------------------------
-local Paths = DragonEngine.Config.Paths
-
---[[ Utils ]]--
+---------------------
+-- Loading modules --
+---------------------
 print("")
-print("**** LOADING UTIL MODULES ****")
+print("**** Loading modules ****")
 print("")
 for _,ModulePaths in pairs(EngineConfigs.ServerPaths.ModulePaths) do
 	for _,ModulePath in pairs(ModulePaths) do
 		DragonEngine:LazyLoadModulesIn(ModulePath)
 	end
---[[ Shared classes ]]--
-print("")
-print("**** LOADING CLASS MODULES ****")
-print("")
-for _,Path in pairs(Paths.SharedClasses) do
-	DragonEngine:LoadClassesIn(Path)
 end
---[[ Server classes ]]--
+DragonEngine:DebugLog("All modules lazy-loaded!")
+
+-------------------------------------------------
+--  Loading, initializing and running services --
+-------------------------------------------------
 print("")
-print("**** LOADING SERVER CLASS MODULES ****")
+print("**** Loading services ****")
 print("")
 for _,ServicePath in pairs(EngineConfigs.ServerPaths.ServicePaths) do
 	DragonEngine:LoadServicesIn(ServicePath)
 end
+DragonEngine:DebugLog("All services loaded!")
 
---[[ Loading services into the engine and initializing them ]]--
 print("")
-print("**** LOADING SERVICES ****")
+print("**** Initializing services ****")
 print("")
-DragonEngine:DebugLog("Loading and initializing services...")
-for _,Path in pairs(Paths.Services) do
-	DragonEngine:LoadServicesIn(Path)
-end
 for ServiceName,_ in pairs(DragonEngine.Services) do
 	DragonEngine:InitializeService(ServiceName)
 end
-DragonEngine:DebugLog("All services loaded and initialized!")
+DragonEngine:DebugLog("All services initialized!")
 
---[[ Running services ]]--
-DragonEngine:DebugLog()
-DragonEngine:DebugLog("Starting services...")
+print("")
+print("**** Starting services ****")
+print("")
 for ServiceName,Service in pairs(DragonEngine.Services) do
 	if Service.Initialized then
 		DragonEngine:StartService(ServiceName)
