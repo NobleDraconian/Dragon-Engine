@@ -36,7 +36,7 @@ local ModuleLocations = {} -- Stores the locations of modulescripts to be lazy-l
 -- Boilerplate
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local function IsModuleIgnored(Module)
-	for _,ModuleName in pairs(DragonEngine.Config.IgnoredModules) do
+	for _,ModuleName in pairs(DragonEngine.Config.Settings.IgnoredModules) do
 		if ModuleName == Module.Name then
 			return true
 		end
@@ -96,7 +96,7 @@ end
 --           DragonEngine Enum "LogMessageType" - The type of message being logged
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:DebugLog(LogMessage,LogMessageType)
-	if DragonEngine.Config["Debug"] then
+	if DragonEngine.Config.Settings.Debug then
 		if LogMessage == nil then
 			print("")
 			return

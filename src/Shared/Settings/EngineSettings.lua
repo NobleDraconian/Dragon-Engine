@@ -16,10 +16,10 @@
 --]]
 
 return{
-	["ShowLogoInOutput"]=false,
-	["Debug"]=false,
+	ShowLogoInOutput = false,
+	Debug = true,
 
-	["IgnoredModules"]={"ExampleService","ExampleController"},
+	IgnoredModules = {"ExampleService","ExampleController"},
 
 	["Enums"]={
 		["ServiceResponse"]={
