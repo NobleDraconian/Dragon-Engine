@@ -1,4 +1,9 @@
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Reshiram110/Dragon-Engine?include_prereleases&label=Latest%20Release)
+![GitHub](https://img.shields.io/github/license/Reshiram110/Dragon-Engine?label=License)
+
+
 ![Linting](https://github.com/Reshiram110/Dragon-Engine/workflows/Selene%20linting/badge.svg)
+
 
 # ! :dragon: HERE BE DRAGONS :dragon: !
 This framework is still a work in progress. I cannot guarantee its stability in stressful environments. Please be aware of this when utilizing it in your games.
