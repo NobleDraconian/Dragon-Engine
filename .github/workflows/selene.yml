@@ -24,4 +24,5 @@ jobs:
 
       - name : Run selene
         run: |
+          selene generate-roblox-std
           selene src/
