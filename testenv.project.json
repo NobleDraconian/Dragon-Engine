@@ -3,33 +3,62 @@
 	"tree":{
 		"$className":"DataModel",
 
-		"ReplicatedStorage":{
+		"ReplicatedStorage" : {
 			"$className":"ReplicatedStorage",
 
-			"DragonEngine":{
-				"$path":"src/Shared",
-
-				"lib":{"$path":"Packages/lib"}
+			"FrameworkShared" : {
+				"$path" : "shared.project.json"
 			}
 		},
 
-		"ServerScriptService":{
+		"ServerScriptService" : {
 			"$className":"ServerScriptService",
 
-			"DragonEngine":{"$path":"src/Server"}
+			"FrameworkServer" : {
+				"$path" : "server.project.json"
+			}
 		},
 
-		"StarterPlayer":{
-			"$className":"StarterPlayer",
+		"StarterPlayer" : {
+			"$className" : "StarterPlayer",
 
-			"StarterPlayerScripts":{
+			"StarterPlayerScripts" : {
 				"$className":"StarterPlayerScripts",
 
-				"DragonEngine":{
-					"$path":"src/Client"
+				"FrameworkClient" : {
+					"$path" : "client.project.json"
 				}
 			}
-		}
-		
+		},
+
+		"Workspace" : {
+			"$className" : "Workspace",
+			
+			"Map" : {
+				"$path" : "Assets/TestEnv/Map.rbxmx"
+			}
+		},
+
+		"Lighting" : {
+			"$className" : "Lighting",
+			"$properties" :  {
+				"Technology" : "ShadowMap",
+				"ClockTime" : 14,
+				"GeographicLatitude" : 41.733,
+				"Brightness" : 0.46,
+				"ExposureCompensation" : 0,
+				"Ambient" : [0,0,0],
+				"OutdoorAmbient" : [0.46274509803922,0.46274509803922,0.46274509803922],
+				"ColorShift_Bottom" : [0,0,0],
+				"ColorShift_Top" : [0,0,0],
+				"FogColor" : [1,1,1],
+				"FogEnd" : 3500,
+				"FogStart" : 130,
+				"LegacyOutlines" : false,
+				"GlobalShadows" : true,
+				"ShadowSoftness" : 0.5
+			},
+			"$path" : "Assets/TestEnv/Lighting"
+		}	
 	}
 }

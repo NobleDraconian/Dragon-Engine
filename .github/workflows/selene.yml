@@ -1,0 +1,28 @@
+name: Selene linting
+on:
+  push:
+    branches:
+    - master
+    paths:
+      - 'src/**'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'src/**'
+jobs:
+  selene-lint:
+    name: Lint src/
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup foreman
+        uses: rojo-rbx/setup-foreman@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name : Run selene
+        run: |
+          selene generate-roblox-std
+          selene src/

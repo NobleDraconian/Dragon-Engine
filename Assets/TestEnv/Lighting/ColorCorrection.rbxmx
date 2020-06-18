@@ -1,0 +1,21 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="ColorCorrectionEffect" referent="RBXA4584EFD6CB4444483A17855526C6800">
+		<Properties>
+			<BinaryString name="AttributesSerialize"></BinaryString>
+			<float name="Brightness">0.300000012</float>
+			<float name="Contrast">0.600000024</float>
+			<bool name="Enabled">true</bool>
+			<string name="Name">ColorCorrection</string>
+			<float name="Saturation">1</float>
+			<BinaryString name="Tags"></BinaryString>
+			<Color3 name="TintColor">
+				<R>1</R>
+				<G>1</G>
+				<B>1</B>
+			</Color3>
+		</Properties>
+	</Item>
+</roblox>

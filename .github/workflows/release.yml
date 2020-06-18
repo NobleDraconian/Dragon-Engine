@@ -1,0 +1,65 @@
+name : Framework release
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  release:
+    name: Create framework release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Setup foreman
+      uses: rojo-rbx/setup-foreman@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Build framework components
+      run: |
+        rojo build server.project.json --output Framework_Server.rbxmx
+        rojo build client.project.json --output Framework_Client.rbxmx
+        rojo build shared.project.json --output Framework_Core.rbxmx
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1.1.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        draft: true
+    
+    - name: Upload framework server
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Framework_Server.rbxmx
+        asset_name: Framework_Server.rbxmx
+        asset_content_type: application/xml
+    
+    - name: Upload framework client
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Framework_Client.rbxmx
+        asset_name: Framework_Client.rbxmx
+        asset_content_type: application/xml
+    
+    - name: Upload framework core
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Framework_Core.rbxmx
+        asset_name: Framework_Core.rbxmx
+        asset_content_type: application/xml

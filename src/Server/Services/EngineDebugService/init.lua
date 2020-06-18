@@ -49,7 +49,7 @@ end
 -- @Description : Returns the current command whitelist.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function EngineEngineDebugService:GetCommandWhitelist()
-	return self.Utils.Table.Copy(CommandWhitelist)
+	return self.Modules.Table.Copy(CommandWhitelist)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ function EngineEngineDebugService:Init()
 	-----------------
 	-- Set up Cmdr --
 	-----------------
-	Cmdr=self.Utils.Cmdr
+	Cmdr=self.Modules.Cmdr
 	Cmdr:RegisterDefaultCommands()
 	Cmdr:RegisterCommandsIn(script.Commands)
 

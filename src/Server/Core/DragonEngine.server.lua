@@ -7,53 +7,57 @@
 ---------------------
 -- Roblox Services --
 ---------------------
-local Workspace=game:GetService("Workspace")
-local ReplicatedStorage=game:GetService("ReplicatedStorage")
-local ServerScriptService=game:GetService("ServerScriptService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
 --------------
 -- REQUIRES --
 --------------
-local DragonEngine=require(ReplicatedStorage.DragonEngine.EngineCore)
-local ENGINE_LOGO=require(ReplicatedStorage.DragonEngine.Logo)
-local Boilerplate=require(ReplicatedStorage.DragonEngine.Boilerplate)
+local DragonEngine = require(ReplicatedStorage.DragonEngine.EngineCore)
+local ENGINE_LOGO = require(ReplicatedStorage.DragonEngine.Logo)
+local Boilerplate = require(ReplicatedStorage.DragonEngine.Boilerplate)
+local EngineConfigs = {
+	Settings = require(ReplicatedStorage.DragonEngine.Settings.EngineSettings),
+	ServerPaths = require(ReplicatedStorage.DragonEngine.Settings.ServerPaths),
+}
 
 -------------
 -- DEFINES --
 -------------
-DragonEngine.Services={} --Contains all services, both running and stopped
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- SERVICES
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
--------------
--- DEFINES --
--------------
-Instance.new('Folder',ReplicatedStorage.DragonEngine).Name="Network"
-local Service_Endpoints=Instance.new('Folder',ReplicatedStorage.DragonEngine.Network) --A folder containing the remote functions/events for services with client APIs.
-Service_Endpoints.Name="Service_Endpoints"
-local Service_Events=Instance.new('Folder',ServerScriptService.DragonEngine) --A folder containing the server sided events for services.
-Service_Events.Name="Service_Events"
+local Framework_NetworkFolder = Instance.new('Folder')
+      Framework_NetworkFolder.Name = "Network"
+      Framework_NetworkFolder.Parent = ReplicatedStorage.DragonEngine
+local ServiceEndpoints_Folder = Instance.new('Folder')
+	  ServiceEndpoints_Folder.Name = "Service_Endpoints"
+	  ServiceEndpoints_Folder.Parent = Framework_NetworkFolder
+local ServiceEvents_Folder = Instance.new('Folder')
+      ServiceEvents_Folder.Name = "Service_Events"
+      ServiceEvents_Folder.Parent = ServerScriptService.DragonEngine
 local Service_ClientEndpoints = Instance.new('Folder')
 	  Service_ClientEndpoints.Name = "Service_ClientEndpoints"
 	  Service_ClientEndpoints.Parent = ReplicatedStorage.DragonEngine.Network
-local Service_Loaded_ServerEvent=Instance.new('BindableEvent') --Bindable event for signalling server services when a service is loaded.
-DragonEngine.ServiceLoaded=Service_Loaded_ServerEvent.Event
-local Service_Unloaded_ServerEvent=Instance.new('BindableEvent') --Bindable event for signalling server services when a service is unloaded.
-DragonEngine.ServiceUnloaded=Service_Unloaded_ServerEvent.Event
+DragonEngine.Services = {} --Contains all services, both running and stopped
 
-local Service_Loaded_ClientEvent=Instance.new('RemoteEvent',ReplicatedStorage.DragonEngine.Network) --Remote event for signalling the engine clients that a service was loaded.
-Service_Loaded_ClientEvent.Name="ServiceLoaded"
-local Service_Unloaded_ClientEvent=Instance.new('RemoteEvent',ReplicatedStorage.DragonEngine.Network) --Remote event for signalling the engine clients that a service was unloaded.
-Service_Unloaded_ClientEvent.Name="ServiceUnloaded"
+------------
+-- Events --
+------------
+local Service_Loaded_ServerEvent = Instance.new('BindableEvent')
+local Service_Unloaded_ServerEvent = Instance.new('BindableEvent')
+local ServiceLoaded_ClientEvent = Instance.new('RemoteEvent')
+	  ServiceLoaded_ClientEvent.Name = "ServiceLoaded"
+	  ServiceLoaded_ClientEvent.Parent = Framework_NetworkFolder
+local ServiceUnloaded_ClientEvent = Instance.new('RemoteEvent')
+	  ServiceUnloaded_ClientEvent.Name = "ServiceUnloaded"
+	  ServiceUnloaded_ClientEvent.Parent = Framework_NetworkFolder
+DragonEngine.ServiceLoaded = Service_Loaded_ServerEvent.Event
+DragonEngine.ServiceUnloaded = Service_Unloaded_ServerEvent.Event
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Boilerplate
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local function IsModuleIgnored(Module)
-	for _,ModuleName in pairs(DragonEngine.Config.IgnoredModules) do
-		if ModuleName==Module.Name then
+	for _,ModuleName in pairs(EngineConfigs.Settings.IgnoredModules) do
+		if ModuleName == Module.Name then
 			return true
 		end
 	end
@@ -62,13 +66,17 @@ local function IsModuleIgnored(Module)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- APIs
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name: GetService
--- @Description : Returns the requested service.
---                Similiar to game:GetService().
+-- @Description : Returns the requested service. Similiar to game:GetService().
+--               *This API exists because the internal 'service' tables can change in future updates.
 -- @Params : string "ServiceName" - The name of the service to retrieve
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:GetService(ServiceName)
-	assert(DragonEngine.Services[ServiceName]~=nil,"[Dragon Engine Server] GetService() : Service '"..ServiceName.."' was not loaded or does not exist.")
+	assert(DragonEngine.Services[ServiceName] ~= nil,"[Dragon Engine Server] GetService() : Service '"..ServiceName.."' was not loaded or does not exist.")
 	return DragonEngine.Services[ServiceName]
 end
 
@@ -84,44 +92,50 @@ function DragonEngine:LoadService(ServiceModule)
 	----------------
 	-- Assertions --
 	----------------
-	assert(ServiceModule~=nil,"[Dragon Engine Server] LoadService() : ModuleScript expected for 'ServiceModule', got nil instead.")
-	assert(typeof(ServiceModule)=="Instance","[Dragon Engine Server] LoadService() : ModuleScript expected for 'ServiceModule', got "..typeof(ServiceModule).." instead.")
+	assert(ServiceModule ~= nil,"[Dragon Engine Server] LoadService() : ModuleScript expected for 'ServiceModule', got nil instead.")
+	assert(typeof(ServiceModule) == "Instance","[Dragon Engine Server] LoadService() : ModuleScript expected for 'ServiceModule', got "..typeof(ServiceModule).." instead.")
 	assert(ServiceModule:IsA("ModuleScript"),"[Dragon Engine Server] LoadService() : ModuleScript expected for 'ServiceModule', got "..ServiceModule.ClassName.." instead.")
-	assert(self.Services[ServiceModule.Name]==nil,"[Dragon Engine Server] LoadService() : A service with the name '"..ServiceModule.Name.."' is already loaded!")
+	assert(self.Services[ServiceModule.Name] == nil,"[Dragon Engine Server] LoadService() : A service with the name '"..ServiceModule.Name.."' is already loaded!")
 
 	-------------
 	-- DEFINES --
 	-------------
-	local ServiceName=ServiceModule.Name
+	local ServiceName = ServiceModule.Name
 	local Service; --Table holding the service
 
 	-------------------------
 	-- Loading the service --
 	------------------------
 	self:DebugLog("Loading service '"..ServiceModule.Name.."'...")
-	local Success,Error=pcall(function() --If the module fails to load/errors, we want to keep the engine going
-		Service=require(ServiceModule)
+
+	local Success,Error = pcall(function() --If the module fails to load/errors, we want to keep the engine going
+		Service = require(ServiceModule)
 	end)
-	if not Success then --Service module failed to load
+	if not Success then --! Service module failed to load
 		self:Log("Failed to load service '"..ServiceName.."' : "..Error,"Warning")
+
 		return false,Error
 	else --Service module was loaded
 
 		----------------------------------
 		-- Generating service endpoints --
 		----------------------------------
-		local EndpointFolder=Instance.new('Folder',Service_Endpoints) --Container for remote functions/events so clients can access the service client API.
-		EndpointFolder.Name=ServiceName
-		Service._EndpointFolder=EndpointFolder
+		local EndpointFolder = Instance.new('Folder') --Container for remote functions/events so clients can access the service client API.
+		      EndpointFolder.Name = ServiceName
+		      EndpointFolder.Parent = ServiceEndpoints_Folder
+		Service._EndpointFolder = EndpointFolder
 
-		if Service.Client~=nil then --The service has client APIs
+		if Service.Client ~= nil then --The service has client APIs
 			for FunctionName,Function in pairs(Service.Client) do
-				if type(Function)=="function" then
-					local RemoteFunction=Instance.new('RemoteFunction',EndpointFolder);RemoteFunction.Name=FunctionName
+				if type(Function) == "function" then
+					local RemoteFunction = Instance.new('RemoteFunction')
+					      RemoteFunction.Name = FunctionName
+					      RemoteFunction.Parent = EndpointFolder
 
-					RemoteFunction.OnServerInvoke=function(...)
+					RemoteFunction.OnServerInvoke = function(...)
 						return Function(Service.Client,...) --Service.Client is passed since `self` needs to be manually defined
 					end
+
 					self:DebugLog("Registered endpoint '"..ServiceName.."."..FunctionName.."'")
 				end
 			end
@@ -138,18 +152,21 @@ function DragonEngine:LoadService(ServiceModule)
 		---------------------------------------------
 		-- Adding service to DragonEngine.Services --
 		---------------------------------------------
-		local EventsFolder=Instance.new('Folder',Service_Events);EventsFolder.Name=ServiceName --Container for server sided events for this service
+		local EventsFolder = Instance.new('Folder') --Container for server sided events for this service
+			  EventsFolder.Name = ServiceName
+			  EventsFolder.Parent = ServiceEvents_Folder
+		Service._ServerEventsFolder = EventsFolder
 
-		Service.Name=ServiceName
-		Service.Status="Uninitialized"
-		Service.Initialized=false
-		Service._ServerEventsFolder=EventsFolder
+		Service.Name = ServiceName
+		Service.Status = "Uninitialized"
+		Service.Initialized = false
 
-		setmetatable(Service,{__index=DragonEngine}) --Exposing Dragon Engine to the service
-		self.Services[ServiceName]=Service
-		Service_Loaded_ClientEvent:FireAllClients(ServiceName)
+		setmetatable(Service,{__index = DragonEngine}) --Exposing Dragon Engine to the service
+		self.Services[ServiceName] = Service
 
 		self:DebugLog("Service '"..ServiceName.."' loaded.")
+		ServiceLoaded_ClientEvent:FireAllClients(ServiceName)
+
 		return true
 	end
 end
@@ -181,19 +198,19 @@ function DragonEngine:UnloadService(ServiceName)
 	----------------
 	-- Assertions --
 	----------------
-	assert(ServiceName~=nil,"[Dragon Engine Server] UnloadService() : string expected for 'ServiceName', got nil instead.")
-	assert(typeof(ServiceName)=="string","[Dragon Engine Server] UnloadService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
-	assert(self.Services[ServiceName]~=nil,"[Dragon Engine Server] UnloadService() : No service with the name '"..ServiceName.."' is loaded!")
+	assert(ServiceName ~= nil,"[Dragon Engine Server] UnloadService() : string expected for 'ServiceName', got nil instead.")
+	assert(typeof(ServiceName) == "string","[Dragon Engine Server] UnloadService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
+	assert(self.Services[ServiceName] ~= nil,"[Dragon Engine Server] UnloadService() : No service with the name '"..ServiceName.."' is loaded!")
 
 	-------------
 	-- DEFINES --
 	-------------
-	local Service=self.Services[ServiceName]
+	local Service = self.Services[ServiceName]
 
 	--------------------------
 	-- Stopping the service --
 	--------------------------
-	if Service.Status=="Running" then
+	if Service.Status == "Running" then
 		self:StopService(ServiceName)
 	end
 
@@ -201,8 +218,9 @@ function DragonEngine:UnloadService(ServiceName)
 	-- Unloading the service --
 	---------------------------
 	self:Log("Unloading service '"..ServiceName.."'...")
-	if typeof(Service.Unload)=="function" then --The service has an unload function, run it to allow the service to clean state.
-		local Success,Error=pcall(function()
+
+	if typeof(Service.Unload) == "function" then --The service has an unload function, run it to allow the service to clean state.
+		local Success,Error = pcall(function()
 			Service:Unload()
 		end)
 		if not Success then --Unloading the service failed.
@@ -213,12 +231,15 @@ function DragonEngine:UnloadService(ServiceName)
 		self:Log("Service '"..ServiceName.."' had no unload function, a memory leak is possible.","Warning")
 	end
 
-	if Service._EndpointFolder~=nil then Service._EndpointFolder:Destroy() end --Destroy service endpoints
+	if Service._EndpointFolder ~= nil then --Destroy service endpoints
+		Service._EndpointFolder:Destroy() 
+	end
 	Service._ServerEventsFolder:Destroy() --Destroy service server events
-	self.Services[ServiceName]=nil
-	Service_Unloaded_ClientEvent:FireAllClients(ServiceName)
+	self.Services[ServiceName] = nil
 
 	self:Log("Service '"..ServiceName.."' unloaded.")
+	ServiceUnloaded_ClientEvent:FireAllClients(ServiceName)
+
 	return true
 end
 
@@ -234,30 +255,32 @@ function DragonEngine:InitializeService(ServiceName)
 	----------------
 	-- Assertions --
 	----------------
-	assert(ServiceName~=nil,"[Dragon Engine Server] InitializeService() : string expected for 'ServiceName', got nil instead.")
-	assert(typeof(ServiceName)=="string","[Dragon Engine Server] InitializeService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
-	assert(self.Services[ServiceName]~=nil,"[Dragon Engine Server] InitializeService() : No service with the name '"..ServiceName.."' is loaded!")
-	assert(self.Services[ServiceName].Initialized==false,"[Dragon Engine Server] InitializeService() : Service '"..ServiceName.."' is already initialized!")
+	assert(ServiceName ~= nil,"[Dragon Engine Server] InitializeService() : string expected for 'ServiceName', got nil instead.")
+	assert(typeof(ServiceName) == "string","[Dragon Engine Server] InitializeService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
+	assert(self.Services[ServiceName] ~= nil,"[Dragon Engine Server] InitializeService() : No service with the name '"..ServiceName.."' is loaded!")
+	assert(self.Services[ServiceName].Initialized == false,"[Dragon Engine Server] InitializeService() : Service '"..ServiceName.."' is already initialized!")
 
 	-------------
 	-- DEFINES --
 	-------------
-	local Service=self.Services[ServiceName]
+	local Service = self.Services[ServiceName]
 
 	------------------------------
 	-- Initializing the service --
 	------------------------------
 	self:DebugLog("Initializing service '"..ServiceName.."'...")
-	if type(Service.Init)=="function" then --An init() function exists, run it.
-		local Success,Error=pcall(function()
+
+	if type(Service.Init) == "function" then --An init() function exists, run it.
+		local Success,Error = pcall(function()
 			Service:Init()
 		end)
-		if not Success then
+		if not Success then -- Initialization failed
 			DragonEngine:Log("Failed to initialize service '"..ServiceName.."' : "..Error,"Warning")
 			return false,Error
 		end
-		Service.Status="Stopped"
-		Service.Initialized=true
+
+		Service.Status = "Stopped"
+		Service.Initialized = true
 	else --Init function doesn't exist
 		self:DebugLog("Service '"..ServiceName.."' could not be initilized, no init function was found!","Warning")
 	end
@@ -274,26 +297,27 @@ end
 --           string "Error" - The error message if starting the service failed. Is nil if the start succeeded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:StartService(ServiceName)
+
 	----------------
 	-- Assertions --
 	----------------
-	assert(ServiceName~=nil,"[Dragon Engine Server] StartService() : string expected for 'ServiceName', got nil instead.")
-	assert(typeof(ServiceName)=="string","[Dragon Engine Server] StartService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
-	assert(self.Services[ServiceName]~=nil,"[Dragon Engine Server] StartService() : No service with the name '"..ServiceName.."' is loaded!")
-	assert(self.Services[ServiceName].Status~="Running","[Dragon Engine Server] StartService() : The service '"..ServiceName.."' is already running!")
-	assert(self.Services[ServiceName].Initialized==true,"[Dragon Engine Server] StartService() : The service '"..ServiceName.."' was not initialized!")
+	assert(ServiceName ~= nil,"[Dragon Engine Server] StartService() : string expected for 'ServiceName', got nil instead.")
+	assert(typeof(ServiceName) == "string","[Dragon Engine Server] StartService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
+	assert(self.Services[ServiceName] ~= nil,"[Dragon Engine Server] StartService() : No service with the name '"..ServiceName.."' is loaded!")
+	assert(self.Services[ServiceName].Status ~= "Running","[Dragon Engine Server] StartService() : The service '"..ServiceName.."' is already running!")
+	assert(self.Services[ServiceName].Initialized == true,"[Dragon Engine Server] StartService() : The service '"..ServiceName.."' was not initialized!")
 
 	-------------
 	-- DEFINES --
 	-------------
-	local Service=self.Services[ServiceName]
+	local Service = self.Services[ServiceName]
 
 	------------------------------
 	-- Initializing the service --
 	------------------------------
 	self:DebugLog("Starting service '"..ServiceName.."'...")
-	if type(Service.Start)=="function" then --An init() function exists, run it.
-		local Success,Error=pcall(function()
+	if type(Service.Start) == "function" then --An init() function exists, run it.
+		local Success,Error = pcall(function()
 			coroutine.wrap(Service.Start)(Service)
 		end)
 		if not Success then
@@ -303,7 +327,7 @@ function DragonEngine:StartService(ServiceName)
 	else --Start function doesn't exist
 		self:DebugLog("Service '"..ServiceName.."' could not be started, no start function was found!","Warning")
 	end
-	Service.Status="Running"
+	Service.Status = "Running"
 	self:DebugLog("Service '"..ServiceName.."' started.")
 
 	return true
@@ -319,29 +343,29 @@ function DragonEngine:StopService(ServiceName)
 	----------------
 	-- Assertions --
 	----------------
-	assert(ServiceName~=nil,"[Dragon Engine Server] StopService() : string expected for 'ServiceName', got nil instead.")
-	assert(typeof(ServiceName)=="string","[Dragon Engine Server] StopService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
-	assert(self.Services[ServiceName]~=nil,"[Dragon Engine Server] StopService() : No service with the name '"..ServiceName.."' is loaded!")
-	assert(self.Services[ServiceName].Status=="Running","[Dragon Engine Server] StopService() : The service '"..ServiceName.."' is already stopped!")
+	assert(ServiceName ~= nil,"[Dragon Engine Server] StopService() : string expected for 'ServiceName', got nil instead.")
+	assert(typeof(ServiceName) == "string","[Dragon Engine Server] StopService() : string expected for 'ServiceName', got "..typeof(ServiceName).." instead.")
+	assert(self.Services[ServiceName] ~= nil,"[Dragon Engine Server] StopService() : No service with the name '"..ServiceName.."' is loaded!")
+	assert(self.Services[ServiceName].Status == "Running","[Dragon Engine Server] StopService() : The service '"..ServiceName.."' is already stopped!")
 
 	-------------
 	-- DEFINES --
 	-------------
-	local Service=self.Services[ServiceName]
+	local Service = self.Services[ServiceName]
 
 	------------------------------
 	-- Stopping the service --
 	------------------------------
 	self:DebugLog("Stopping service '"..ServiceName.."'...")
-	if type(Service.Stop)=="function" then --A stop() function exists, run it.
-		local Success,Error=pcall(function()
+	if type(Service.Stop) == "function" then --A stop() function exists, run it.
+		local Success,Error = pcall(function()
 			Service:Stop()
 		end)
 		if not Success then
 			DragonEngine:Log("Failed to stop service '"..ServiceName.."' : "..Error,"Warning")
 			return false,Error
 		end
-		Service.Status="Stopped"
+		Service.Status = "Stopped"
 	else --Stop function doesn't exist
 		self:DebugLog("Service '"..ServiceName.."' could not be stopped, no stop function was found!","Warning")
 	end
@@ -388,12 +412,12 @@ function DragonEngine:RegisterServiceClientEvent(Name)
 	----------------
 	-- Assertions --
 	----------------
-	assert(Name~=nil,"[Dragon Engine Server] RegisterServiceClientEvent() : string expected for 'Name', got nil instead.")
-	assert(typeof(Name)=="string","[Dragon Engine Server] RegisterServiceClientEvent() : string expected for 'ame', got "..typeof(Name).." instead.")
+	assert(Name ~= nil,"[Dragon Engine Server] RegisterServiceClientEvent() : string expected for 'Name', got nil instead.")
+	assert(typeof(Name) == "string","[Dragon Engine Server] RegisterServiceClientEvent() : string expected for 'ame', got "..typeof(Name).." instead.")
 
-	local RemoteEvent=Instance.new('RemoteEvent')
-	RemoteEvent.Name=Name
-	RemoteEvent.Parent=self._EndpointFolder
+	local RemoteEvent = Instance.new('RemoteEvent')
+	      RemoteEvent.Name = Name
+	      RemoteEvent.Parent = self._EndpointFolder
 
 	self:DebugLog("Registered client event '"..Name.."' for service '"..self.Name.."'")
 
@@ -411,13 +435,13 @@ function DragonEngine:RegisterServiceServerEvent(Name)
 	----------------
 	-- Assertions --
 	----------------
-	assert(Name~=nil,"[Dragon Engine Server] RegisterServiceServerEvent() : string expected for 'Name', got nil instead.")
-	assert(typeof(Name)=="string","[Dragon Engine Server] RegisterServiceServerEvent() : string expected for 'ame', got "..typeof(Name).." instead.")
+	assert(Name ~= nil,"[Dragon Engine Server] RegisterServiceServerEvent() : string expected for 'Name', got nil instead.")
+	assert(typeof(Name) == "string","[Dragon Engine Server] RegisterServiceServerEvent() : string expected for 'ame', got "..typeof(Name).." instead.")
 
-	local BindableEvent=Instance.new('BindableEvent')
-	BindableEvent.Name=Name
-	BindableEvent.Parent=self._ServerEventsFolder
-	self[Name]=BindableEvent.Event
+	local BindableEvent = Instance.new('BindableEvent')
+	      BindableEvent.Name = Name
+	      BindableEvent.Parent = self._ServerEventsFolder
+	self[Name] = BindableEvent.Event
 
 	self:DebugLog("Registered server event '"..Name.."' for service '"..self.Name.."'")
 
@@ -428,104 +452,92 @@ end
 -- ENGINE INIT
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-------------------------
--- Set up environment --
-------------------------
-
 ----------------------
 -- Loading Settings --
 ----------------------
---[[ Load default settings ]]--
-local DefSettingsSuccess,DefSettingsError=pcall(function()
-	DragonEngine.Config=require(ReplicatedStorage.DragonEngine.Settings.EngineSettings)
-	DragonEngine.Config.Paths=require(ReplicatedStorage.DragonEngine.Settings.ServerPaths)
-end)
-assert(DefSettingsSuccess==true, DefSettingsSuccess==true or "[Dragon Engine Server] An error occured while loading settings : "..DefSettingsError)
+local Developer_SettingsFolder = ReplicatedStorage:FindFirstChild("DragonEngine_Configs")
+if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
+	local Success,Error = pcall(function()
+		if Developer_SettingsFolder:FindFirstChild("EngineSettings") ~= nil then
+			local Developer_EngineConfigs = require(Developer_SettingsFolder.EngineSettings)
 
---[[ Load user settings ]]--
-if ReplicatedStorage:FindFirstChild("DragonEngine_UserSettings")~=nil then
-	local SettingsFolder=ReplicatedStorage.DragonEngine_UserSettings
-
-	local LoadSuccess,Error=pcall(function()
-		if SettingsFolder:FindFirstChild("EngineSettings")~=nil then
-			local EngineSettings=require(SettingsFolder.EngineSettings)
-
-			for SettingName,SettingValue in pairs(EngineSettings) do
-				if DragonEngine.Config[SettingName]~=nil then --Setting exists, override with developer value.
-					DragonEngine.Config[SettingName]=SettingValue
-				else --Setting does not exist.
-					error("Attempt to override non-existant setting!")
+			EngineConfigs.Settings.ShowLogoInOutput = Developer_EngineConfigs.ShowLogoInOutput
+			EngineConfigs.Settings.Debug = Developer_EngineConfigs.Debug
+			
+			for ModuleLocationType,ModuleNames in pairs(Developer_EngineConfigs.IgnoredModules) do
+				for _,ModuleName in pairs(ModuleNames) do
+					table.insert(EngineConfigs.Settings.IgnoredModules[ModuleLocationType],ModuleName)
 				end
 			end
 		end
 
-		if SettingsFolder:FindFirstChild("ServerPaths")~=nil then
-			local ServerPaths=require(SettingsFolder.ServerPaths)
+		if Developer_SettingsFolder:FindFirstChild("ServerPaths") ~= nil then
+			local Developer_ServerPaths = require(Developer_SettingsFolder.ServerPaths)
 
-			for PathName,PathValues in pairs(ServerPaths) do
-				for _,PathValue in pairs(PathValues) do
-					table.insert(DragonEngine.Config.Paths[PathName],PathValue)
+			for ModuleLocationType,ModulePaths in pairs(Developer_ServerPaths.ModulePaths) do
+				for _,ModulePath in pairs(ModulePaths) do
+					table.insert(EngineConfigs.ServerPaths.ModulePaths[ModuleLocationType],ModulePath)
 				end
+			end
+
+			for _,ServicePath in pairs(Developer_ServerPaths.ServicePaths) do
+				table.insert(EngineConfigs.ServerPaths.ServicePaths,ServicePath)
 			end
 		end
 	end)
-
-	assert(LoadSuccess==true,LoadSuccess==true or "[Dragon Engine Server] An error occured while loading developer-specified settings : "..Error)
+	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..Error)
 end
+DragonEngine.Config = EngineConfigs
 
-if DragonEngine.Config["ShowLogoInOutput"] then print(ENGINE_LOGO) end --Displaying the logo in the output logs.
-if DragonEngine.Config["Debug"] then warn("[Dragon Engine Server] Debug enabled. Logging will be verbose.") end
+if EngineConfigs.Settings.ShowLogoInOutput then
+	print(ENGINE_LOGO)
+end
+if EngineConfigs.Settings.Debug then
+	warn("[Dragon Engine Server] Debug enabled. Logging will be verbose.")
+end
 
 -------------------
 -- Loading Enums --
 -------------------
-for EnumName,EnumVal in pairs(DragonEngine.Config.Enums) do
+for EnumName,EnumVal in pairs(EngineConfigs.Settings.Enums) do
 	DragonEngine:DefineEnum(EnumName,EnumVal)
 end
 
------------------------------------
--- Loading services,classes,etc. --
------------------------------------
-local Paths=DragonEngine.Config.Paths
+---------------------
+-- Loading modules --
+---------------------
+print("")
+print("**** Loading modules ****")
+print("")
+for _,ModulePaths in pairs(EngineConfigs.ServerPaths.ModulePaths) do
+	for _,ModulePath in pairs(ModulePaths) do
+		DragonEngine:LazyLoadModulesIn(ModulePath)
+	end
+end
+DragonEngine:DebugLog("All modules lazy-loaded!")
 
---[[ Utils ]]--
+-------------------------------------------------
+--  Loading, initializing and running services --
+-------------------------------------------------
 print("")
-print("**** LOADING UTIL MODULES ****")
+print("**** Loading services ****")
 print("")
-for _,Path in pairs(Paths.Utils) do
-	DragonEngine:LoadUtilitiesIn(Path)
+for _,ServicePath in pairs(EngineConfigs.ServerPaths.ServicePaths) do
+	DragonEngine:LoadServicesIn(ServicePath)
 end
---[[ Shared classes ]]--
-print("")
-print("**** LOADING CLASS MODULES ****")
-print("")
-for _,Path in pairs(Paths.SharedClasses) do
-	DragonEngine:LoadClassesIn(Path)
-end
---[[ Server classes ]]--
-print("")
-print("**** LOADING SERVER CLASS MODULES ****")
-print("")
-for _,Path in pairs(Paths.ServerClasses) do
-	DragonEngine:LoadClassesIn(Path)
-end
+DragonEngine:DebugLog("All services loaded!")
 
---[[ Loading services into the engine and initializing them ]]--
 print("")
-print("**** LOADING SERVICES ****")
+print("**** Initializing services ****")
 print("")
-DragonEngine:DebugLog("Loading and initializing services...")
-for _,Path in pairs(Paths.Services) do
-	DragonEngine:LoadServicesIn(Path)
-end
 for ServiceName,_ in pairs(DragonEngine.Services) do
 	DragonEngine:InitializeService(ServiceName)
 end
-DragonEngine:DebugLog("All services loaded and initialized!")
+DragonEngine:DebugLog("All services initialized!")
 
---[[ Running services ]]--
-DragonEngine:DebugLog()
-DragonEngine:DebugLog("Starting services...")
+print("")
+print("**** Starting services ****")
+print("")
 for ServiceName,Service in pairs(DragonEngine.Services) do
 	if Service.Initialized then
 		DragonEngine:StartService(ServiceName)
@@ -533,13 +545,13 @@ for ServiceName,Service in pairs(DragonEngine.Services) do
 end
 DragonEngine:DebugLog("All services running!")
 
---[[ Engine loaded ]]--
-local Engine_Loaded=Instance.new('BoolValue')
-Engine_Loaded.Name="_Loaded"
-Engine_Loaded.Value=true
-Engine_Loaded.Parent=ReplicatedStorage.DragonEngine
+------------------------------------------
+-- Indicating that the engine is loaded --
+------------------------------------------
+local Engine_Loaded = Instance.new('BoolValue')
+      Engine_Loaded.Name = "_Loaded"
+      Engine_Loaded.Value = true
+      Engine_Loaded.Parent = ReplicatedStorage.DragonEngine
 
-print("")
-DragonEngine:DebugLog("Engine config : ")
-DragonEngine:DebugLog(DragonEngine.Utils.Table.repr(DragonEngine.Config,{pretty=true}))
+shared.DragonEngine = DragonEngine
 print("Dragon Engine "..DragonEngine.Version.." loaded!")

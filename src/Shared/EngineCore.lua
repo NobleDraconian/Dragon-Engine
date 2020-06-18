@@ -3,8 +3,6 @@
 
 	Global backend engine for Phoenix Entertainment, LLC.
 
-	Version : 3.0.0
-
 	Programmed, designed and developed by @Reshiram110
 	Inspiration by @Crazyman32's 'Aero' framework
 --]]
@@ -12,31 +10,32 @@
 ---------------------
 -- Roblox Services --
 ---------------------
-local ReplicatedStorage=game:GetService("ReplicatedStorage")
+--//local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --------------
 -- REQUIRES --
 --------------
-local Boilerplate=require(ReplicatedStorage.DragonEngine.Boilerplate)
+--//local Boilerplate = require(ReplicatedStorage.DragonEngine.Boilerplate)
 
 -------------
 -- DEFINES --
 -------------
-local DragonEngine={
-	Utils={}, --Contains all of the utilities being used
-	Classes={}, --Contains all of the classes being used
-	Enum={}, --Contains all custom Enums.
-	Config={}, --Holds the engines settings.
+local DragonEngine = {
+	Modules = {}, --Holds all of the loaded modules
+	Enum = {}, --Contains all custom Enums.
+	Config = {}, --Holds the engines settings.
 
-	Version="3.1.0"
+	Version = "0.1.0" --TODO : Replace this with a valueobject that stores the latest git tag inside it via remodel.
 }
+
+local ModuleLocations = {} -- Stores the locations of modulescripts to be lazy-loaded
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Boilerplate
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local function IsModuleIgnored(Module)
-	for _,ModuleName in pairs(DragonEngine.Config.IgnoredModules) do
-		if ModuleName==Module.Name then
+	for _,ModuleName in pairs(DragonEngine.Config.Settings.IgnoredModules) do
+		if ModuleName == Module.Name then
 			return true
 		end
 	end
@@ -50,14 +49,16 @@ end
 -- @Params : Variant "Value" - The value(s) for the engine to return from this call.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:GetOutput(...)
-	local Values={...}
-	local OutputString="{"
+	local Values = {...}
+	local OutputString = "{"
 
 	for Index,Param in pairs(Values) do
-		OutputString=OutputString..tostring(Param)
-		if Values[Index+1]~=nil then OutputString=OutputString..", " end
+		OutputString = OutputString..tostring(Param)
+		if Values[Index+1] ~= nil then 
+			OutputString = OutputString..", " 
+		end
 	end
-	OutputString=OutputString.."}"
+	OutputString = OutputString.."}"
 	return "DRAGON_ENGINE_OUTPUT -> "..OutputString
 end
 
@@ -73,13 +74,13 @@ end
 -- @TODO : Design and implement custom logging system with UI
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:Log(LogMessage,LogMessageType)
-	if LogMessage==nil then
+	if LogMessage == nil then
 		print("")
 		return
 	end
-	if LogMessageType=="warning" or LogMessageType=="Warning" then
+	if LogMessageType == "warning" or LogMessageType == "Warning" then
 		warn("[Dragon Engine Server] "..LogMessage)
-	elseif LogMessageType=="error" or LogMessageType=="Error" then
+	elseif LogMessageType == "error" or LogMessageType == "Error" then
 		error("[Dragon Engine Server] "..LogMessage)
 	else
 		print("[Dragon Engine Server] "..LogMessage)
@@ -93,14 +94,14 @@ end
 --           DragonEngine Enum "LogMessageType" - The type of message being logged
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:DebugLog(LogMessage,LogMessageType)
-	if DragonEngine.Config["Debug"] then
-		if LogMessage==nil then
+	if DragonEngine.Config.Settings.Debug then
+		if LogMessage == nil then
 			print("")
 			return
 		end
-		if LogMessageType=="warning" or LogMessageType=="Warning" then
+		if LogMessageType == "warning" or LogMessageType == "Warning" then
 			warn("[Dragon Engine Server] "..LogMessage)
-		elseif LogMessageType=="error" or LogMessageType=="Error" then
+		elseif LogMessageType == "error" or LogMessageType == "Error" then
 			error("[Dragon Engine Server] "..LogMessage)
 		else
 			print("[Dragon Engine Server] "..LogMessage)
@@ -109,119 +110,76 @@ function DragonEngine:DebugLog(LogMessage,LogMessageType)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- CLASSES
+-- Modules
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadClass
--- @Description : Loads the specified class module into the engine.
--- @Params : Instance <ModuleScript>  "ClassModule" - The class module to load into the engine
--- @Returns : bool "Success" - Is true if the class module was loaded successfully. Is false if it was not loaded successfully.
---            string "Error" - The error message if loading fails. Is nil if loading succeeds.
+-- @Name : GetModule
+-- @Description : Gets and returns the specified module from the framework
+-- @Params : string "ModuleName" - The name of the module to get from the framework
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadClass(ClassModule)
+function DragonEngine:GetModule(ModuleName)
 
 	----------------
 	-- Assertions --
 	----------------
-	assert(ClassModule~=nil,"[Dragon Engine Server] LoadClass() : ModuleScript expected for 'ClassModule', got nil instead.")
-	assert(typeof(ClassModule)=="Instance","[Dragon Engine Server] LoadClass() : ModuleScript expected for 'ClassModule', got "..typeof(ClassModule).." instead.")
-	assert(ClassModule:IsA("ModuleScript"),"[Dragon Engine Server] LoadClass) : ModuleScript expected for 'ClassModule', got "..ClassModule.ClassName.." instead.")
-	assert(self.Classes[ClassModule.Name]==nil,"[Dragon Engine Server] LoadClass() : A class with the name '"..ClassModule.Name.."' is already loaded!")
+	assert(ModuleName ~= nil,"[Dragon Engine] GetModule() : string expected for 'ModuleName', got "..typeof(ModuleName).." instead.")
+
+	return self.Modules[ModuleName]
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : LoadModule
+-- @Description : Loads the specified module into the framework
+-- @Params : Instance <ModuleScript> 'Module' - The module to load
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:LoadModule(Module)
+
+	----------------
+	-- Assertions --
+	----------------
+	assert(Module ~= nil,"[Dragon Engine Server] LoadModule() : ModuleScript expected for 'Module', got nil instead.")
+	assert(typeof(Module) == "Instance","[Dragon Engine Server] LoadModule() : ModuleScript expected for 'Module', got "..typeof(Module).." instead.")
+	assert(Module:IsA("ModuleScript"),"[Dragon Engine Server] LoadModule() : ModuleScript expected for 'Module', got "..Module.ClassName.." instead.")
+	assert(rawget(self.Modules,Module.Name) == nil,"[Dragon Engine Server] LoadModule() : A module with the name '"..Module.Name.."' is already loaded!")
 
 	-------------
-	-- DEFINES --
+	-- Defines --
 	-------------
-	local ClassName=ClassModule.Name
-	local Class; --Table holding the class
+	local ModuleName = Module.Name
+	local LoadedModule; --Table holding the class
 
 	-----------------------
 	-- Loading the class --
 	-----------------------
-	self:DebugLog("Loading class '"..ClassModule.Name.."'...")
-	local Success,Error=pcall(function() --If the module fails to load/errors, we want to keep the engine going
-		Class=require(ClassModule)
+	self:DebugLog("Loading module '"..ModuleName.."'...")
+	local Success,Error = pcall(function() --If the module fails to load/errors, we want to keep the engine going
+		LoadedModule = require(Module)
 	end)
 	if not Success then
-		DragonEngine:Log("Failed to load class '"..ClassName.."' : "..Error,"Warning")
+		self:Log("Failed to load module '"..ModuleName.."' : "..Error,"Warning")
 		return false,Error
 	else
-		DragonEngine.Classes[ClassName]=Class
-		DragonEngine:DebugLog("Loaded Class '"..ClassName.."'.")
+		self.Modules[ModuleName] = LoadedModule
+		self:DebugLog("Loaded module '"..ModuleName.."'.")
 		return true
 	end
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadClassesIn
--- @Description : Loads all class modules in the given container.
--- @Params : Instance "Container" - The container that holds all of the class modules.
--- @TODO : PICK UP HERE
+-- @Name : LazyLoadModulesIn
+-- @Description : Lazy-loads all modules in the given container into the framework
+-- @Params : Instance variant 'Container' - The container to lazy-load the modules from
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadClassesIn(Container)
-	for _,ModuleScript in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
-		if not IsModuleIgnored(ModuleScript) then
-			self:LoadClass(ModuleScript)
-		end
-	end
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- UTILITIES
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadUtility
--- @Description : Loads the specified utility module into the engine.
--- @Params : Instance <ModuleScript> "UtilModule" - The utility module to load into the engine
--- @Returns : bool "Success" - Is true if the utility module was loaded successfully. Is false if it was not loaded successfully.
---            string "Error" - The error message if loading fails. Is nil if loading succeeds.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadUtility(UtilModule)
+function DragonEngine:LazyLoadModulesIn(Container)
 
 	----------------
 	-- Assertions --
 	----------------
-	assert(UtilModule~=nil,"[Dragon Engine Server] LoadUtility() : ModuleScript expected for 'UtilModule', got nil instead.")
-	assert(typeof(UtilModule)=="Instance","[Dragon Engine Server] LoadUtility() : ModuleScript expected for 'Utilodule', got "..typeof(UtilModule).." instead.")
-	assert(UtilModule:IsA("ModuleScript"),"[Dragon Engine Server] LoadUtility) : ModuleScript expected for 'UtilModule', got "..UtilModule.ClassName.." instead.")
-	assert(self.Utils[UtilModule.Name]==nil,"[Dragon Engine Server] LoadUtility() : A utility with the name '"..UtilModule.Name.."' is already loaded!")
+	assert(typeof(Container) == "Instance","[Dragon Engine Core] LazyLoadModulesIn() : Instance expected for 'Container', got "..typeof(Container).." instead.")
 
-	-------------
-	-- DEFINES --
-	-------------
-	local UtilName=UtilModule.Name
-	local Util;
-
-	-------------------------
-	-- Loading the utility --
-	-------------------------
-	self:DebugLog("Loading utility '"..UtilModule.Name.."'...")
-	local Success,Error=pcall(function() --If the module fails to load/errors, we want to keep the engine going.
-		Util=require(UtilModule)
-	end)
-	if not Success then
-		DragonEngine:Log("Failed to load utility '"..UtilName.."' : "..Error,"Warning")
-		return false,Error
-	else
-		self.Utils[UtilName]=Util
-		self:DebugLog("Loaded Utility : '"..UtilName.."'.")
-		return true
-	end
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadUtilitiesIn
--- @Description : Loads all utility modules in the given container.
--- @Params : Instance "Container" - The container that holds all of the utility modules.
--- @TODO : PICK UP HERE
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadUtilitiesIn(Container)
-	for _,ModuleScript in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
-		if not IsModuleIgnored(ModuleScript) then
-			self:LoadUtility(ModuleScript)
-		end
-	end
+	table.insert(ModuleLocations,Container)
+	self:DebugLog("All modules in '"..Container:GetFullName().."' will be lazyloaded.")
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -236,15 +194,15 @@ end
 function DragonEngine:DefineEnum(EnumName,EnumTable)
 
 	local function GetEnumItems(CustomEnum)
-		local EnumItems={}
+		local EnumItems = {}
 
-		for EnumItemName,EnumItemValue in pairs(CustomEnum) do
-			if type(EnumItemValue)=="table" then
-				for i,v in pairs(GetEnumItems(EnumItemValue)) do
+		for _,EnumItemValue in pairs(CustomEnum) do
+			if type(EnumItemValue) == "table" then
+				for _,v in pairs(GetEnumItems(EnumItemValue)) do
 					table.insert(EnumItems,v)
 				end
 			else
-				table.insert(EnumItemValue)
+				table.insert(EnumItems,EnumItemValue)
 			end
 		end
 
@@ -252,9 +210,26 @@ function DragonEngine:DefineEnum(EnumName,EnumTable)
 	end
 
 
-	self.Enum[EnumName]=EnumTable
+	self.Enum[EnumName] = EnumTable
 end
 
-shared.DragonEngine=DragonEngine
+--------------------------------
+-- Listening for module calls --
+--------------------------------
+setmetatable(DragonEngine.Modules,{
+	__index = function(_,Key)
+		for _,ModuleLocation in pairs(ModuleLocations) do
+			for _,ModuleScript in pairs(ModuleLocation:GetChildren()) do
+				if ModuleScript.Name == Key then
+					if not IsModuleIgnored(ModuleScript.Name) then
+						DragonEngine:DebugLog("Lazy-loading module '"..ModuleScript.Name.."'...")
+						DragonEngine:LoadModule(ModuleScript)
+						return DragonEngine.Modules[ModuleScript.Name]
+					end
+				end
+			end
+		end
+	end
+})
 
 return DragonEngine
