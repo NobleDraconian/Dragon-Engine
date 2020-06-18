@@ -1,3 +1,5 @@
+![Linting](https://github.com/Reshiram110/Dragon-Engine/workflows/Selene%20linting/badge.svg)
+
 # ! :dragon: HERE BE DRAGONS :dragon: !
 This framework is still a work in progress. I cannot guarantee its stability in stressful environments. Please be aware of this when utilizing it in your games.
 
