@@ -3,8 +3,6 @@
 
 	Global backend engine for Phoenix Entertainment, LLC.
 
-	Version : 3.0.0
-
 	Programmed, designed and developed by @Reshiram110
 	Inspiration by @Crazyman32's 'Aero' framework
 --]]
