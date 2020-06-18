@@ -116,6 +116,21 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : GetModule
+-- @Description : Gets and returns the specified module from the framework
+-- @Params : string "ModuleName" - The name of the module to get from the framework
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:GetModule(ModuleName)
+
+	----------------
+	-- Assertions --
+	----------------
+	assert(ModuleName ~= nil,"[Dragon Engine] GetModule() : string expected for 'ModuleName', got "..typeof(ModuleName).." instead.")
+
+	return self.Modules[ModuleName]
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name : LoadModule
 -- @Description : Loads the specified module into the framework
 -- @Params : Instance <ModuleScript> 'Module' - The module to load
