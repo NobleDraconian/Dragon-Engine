@@ -3,7 +3,6 @@ on:
   push:
     branches:
     - master
-    - 0.1.0-release
     paths:
       - 'src/**'
   pull_request:
