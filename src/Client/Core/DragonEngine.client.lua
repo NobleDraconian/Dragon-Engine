@@ -431,6 +431,10 @@ if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
 			EngineConfigs.Settings.Debug = Developer_EngineConfigs.Debug
 			
 			for ModuleLocationType,ModuleNames in pairs(Developer_EngineConfigs.IgnoredModules) do
+				if EngineConfigs.Settings.IgnoredModules[ModuleLocationType] == nil then
+					EngineConfigs.Settings.IgnoredModules[ModuleLocationType] = {}
+				end
+
 				for _,ModuleName in pairs(ModuleNames) do
 					table.insert(EngineConfigs.Settings.IgnoredModules[ModuleLocationType],ModuleName)
 				end
@@ -441,17 +445,21 @@ if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
 			local Developer_ClientPaths = require(Developer_SettingsFolder.ClientPaths)
 
 			for ModuleLocationType,ModulePaths in pairs(Developer_ClientPaths.ModulePaths) do
+				if EngineConfigs.ClientPaths.ModulePaths[ModuleLocationType] == nil then
+					EngineConfigs.ClientPaths.ModulePaths[ModuleLocationType] = {}
+				end
+
 				for _,ModulePath in pairs(ModulePaths) do
 					table.insert(EngineConfigs.ClientPaths.ModulePaths[ModuleLocationType],ModulePath)
 				end
 			end
 
 			for _,ControllerPath in pairs(Developer_ClientPaths.ControllerPaths) do
-				table.insert(EngineConfigs.ServerPaths.ServicePaths,ControllerPath)
+				table.insert(EngineConfigs.ClientPaths.ControllerPaths,ControllerPath)
 			end
 		end
 	end)
-	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..Error)
+	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..(Error or ""))
 end
 DragonEngine.Config = EngineConfigs
 
