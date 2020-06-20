@@ -455,7 +455,7 @@ if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
 			end
 
 			for _,ControllerPath in pairs(Developer_ClientPaths.ControllerPaths) do
-				table.insert(EngineConfigs.ServerPaths.ServicePaths,ControllerPath)
+				table.insert(EngineConfigs.ClientPaths.ControllerPaths,ControllerPath)
 			end
 		end
 	end)
