@@ -128,6 +128,15 @@ end
 -- DEFINES --
 -------------
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : GetService
+-- @Description : Returns the requested service
+-- @Params : string "ServiceName" - The name of the service to retrieve
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:GetService(ServiceName)
+	assert(DragonEngine.Services[ServiceName] ~= nil,"[Dragon Engine Client] GetService() : Service '"..ServiceName.."' was not loaded or does not exist.")
+	return DragonEngine.Services[ServiceName]
+end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- @Name: GetController
