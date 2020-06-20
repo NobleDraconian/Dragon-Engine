@@ -493,7 +493,7 @@ if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
 			end
 		end
 	end)
-	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..Error)
+	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..(Error or ""))
 end
 DragonEngine.Config = EngineConfigs
 
