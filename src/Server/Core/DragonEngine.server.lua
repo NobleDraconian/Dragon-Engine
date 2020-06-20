@@ -465,6 +465,10 @@ if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
 			EngineConfigs.Settings.Debug = Developer_EngineConfigs.Debug
 			
 			for ModuleLocationType,ModuleNames in pairs(Developer_EngineConfigs.IgnoredModules) do
+				if EngineConfigs.Settings.IgnoredModules[ModuleLocationType] == nil then
+					EngineConfigs.Settings.IgnoredModules[ModuleLocationType] = {}
+				end
+
 				for _,ModuleName in pairs(ModuleNames) do
 					table.insert(EngineConfigs.Settings.IgnoredModules[ModuleLocationType],ModuleName)
 				end
@@ -475,6 +479,10 @@ if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
 			local Developer_ServerPaths = require(Developer_SettingsFolder.ServerPaths)
 
 			for ModuleLocationType,ModulePaths in pairs(Developer_ServerPaths.ModulePaths) do
+				if EngineConfigs.ServerPaths.ModulePaths[ModuleLocationType] == nil then
+					EngineConfigs.ServerPaths.ModulePaths[ModuleLocationType] = {}
+				end
+
 				for _,ModulePath in pairs(ModulePaths) do
 					table.insert(EngineConfigs.ServerPaths.ModulePaths[ModuleLocationType],ModulePath)
 				end
