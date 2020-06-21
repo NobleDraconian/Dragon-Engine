@@ -223,8 +223,14 @@ setmetatable(DragonEngine.Modules,{
 				if ModuleScript.Name == Key then
 					if not IsModuleIgnored(ModuleScript.Name) then
 						DragonEngine:DebugLog("Lazy-loading module '"..ModuleScript.Name.."'...")
-						DragonEngine:LoadModule(ModuleScript)
-						return DragonEngine.Modules[ModuleScript.Name]
+						local LoadSuccess = DragonEngine:LoadModule(ModuleScript)
+
+						if LoadSuccess then
+							return DragonEngine:GetModule(ModuleScript.Name)
+						else
+							DragonEngine:DebugLog("Failed to lazy-load module '"..ModuleScript.Name.."'","Warning")
+							return nil
+						end
 					end
 				end
 			end
