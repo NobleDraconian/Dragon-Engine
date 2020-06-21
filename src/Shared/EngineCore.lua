@@ -10,12 +10,12 @@
 ---------------------
 -- Roblox Services --
 ---------------------
---//local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --------------
 -- REQUIRES --
 --------------
---//local Boilerplate = require(ReplicatedStorage.DragonEngine.Boilerplate)
+local Boilerplate = require(ReplicatedStorage.DragonEngine.Boilerplate)
 
 -------------
 -- DEFINES --
@@ -219,7 +219,7 @@ end
 setmetatable(DragonEngine.Modules,{
 	__index = function(_,Key)
 		for _,ModuleLocation in pairs(ModuleLocations) do
-			for _,ModuleScript in pairs(ModuleLocation:GetChildren()) do
+			for _,ModuleScript in pairs(Boilerplate.RecurseFind(ModuleLocation,"ModuleScript")) do
 				if ModuleScript.Name == Key then
 					if not IsModuleIgnored(ModuleScript.Name) then
 						DragonEngine:DebugLog("Lazy-loading module '"..ModuleScript.Name.."'...")
