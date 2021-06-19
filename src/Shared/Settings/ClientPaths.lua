@@ -8,7 +8,7 @@
 -- Roblox Services --
 ---------------------
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
-local Players=game:GetService("Players")
+local StarterPlayer = game:GetService("StarterPlayer")
 
 return {
 	ModulePaths = {
@@ -19,6 +19,6 @@ return {
 	},
 
 	ControllerPaths = {
-		Players.LocalPlayer.PlayerScripts.DragonEngine.Controllers
+		StarterPlayer.StarterPlayerScripts.DragonEngine.Controllers
 	}
 }
