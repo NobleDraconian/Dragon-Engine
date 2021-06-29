@@ -8,7 +8,7 @@
 -- Roblox Services --
 ---------------------
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
+local StarterPlayer = game:GetService("StarterPlayer")
 
 --------------
 -- REQUIRES --
@@ -42,7 +42,7 @@ local Service_Endpoints = ReplicatedStorage.DragonEngine.Network.Service_Endpoin
 local Service_ClientEndpoints = ReplicatedStorage.DragonEngine.Network.Service_ClientEndpoints
 local Controller_Events = Instance.new('Folder') --A folder containing the client sided events for controllers.
 	  Controller_Events.Name = "Controller_Events"
-	  Controller_Events.Parent = Players.LocalPlayer.PlayerScripts.DragonEngine
+	  Controller_Events.Parent = StarterPlayer.StarterPlayerScripts.DragonEngine
 
 ------------
 -- Events --
