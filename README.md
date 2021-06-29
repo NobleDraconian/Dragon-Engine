@@ -1,4 +1,4 @@
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Reshiram110/Dragon-Engine?include_prereleases&label=Latest%20Release)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/NobleDraconian/Dragon-Engine?include_prereleases&label=Latest%20Release)
 ![GitHub](https://img.shields.io/github/license/Reshiram110/Dragon-Engine?label=License)
 
 
