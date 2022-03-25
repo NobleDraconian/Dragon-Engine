@@ -30,6 +30,7 @@ local DragonEngine = {
 
 local ModuleLocations = {} -- Stores the locations of modulescripts to be lazy-loaded
 local LogHistory = {} -- Stores the the history of all logs
+local MessageLogged; -- Fired when a message is logged via Log() or DebugLog()
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Boilerplate
@@ -42,6 +43,15 @@ local function IsModuleIgnored(Module)
 	end
 
 	return false
+end
+
+local function RegisterEvent(EventName)
+	local BindableEvent = Instance.new('BindableEvent')
+	BindableEvent.Name = EventName
+
+	DragonEngine[EventName] = BindableEvent.Event
+
+	return BindableEvent
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -83,6 +93,8 @@ function DragonEngine:Log(LogMessage,LogMessageType)
 	end
 
 	table.insert(LogHistory,{Message = LogMessage,Type = LogMessageType})
+	MessageLogged:Fire(LogMessage,LogMessageType)
+
 	if LogMessageType == "warning" or LogMessageType == "Warning" then
 		warn("[Dragon Engine Server] "..LogMessage)
 	elseif LogMessageType == "error" or LogMessageType == "Error" then
@@ -108,6 +120,8 @@ function DragonEngine:DebugLog(LogMessage,LogMessageType)
 		end
 
 		table.insert(LogHistory,{Message = LogMessage,Type = LogMessageType})
+		MessageLogged:Fire(LogMessage,LogMessageType)
+
 		if LogMessageType == "warning" or LogMessageType == "Warning" then
 			warn("[Dragon Engine Server] "..LogMessage)
 		elseif LogMessageType == "error" or LogMessageType == "Error" then
@@ -268,5 +282,10 @@ setmetatable(DragonEngine.Modules,{
 		end
 	end
 })
+
+-----------------------
+-- Setting up events --
+-----------------------
+MessageLogged = RegisterEvent("MessageLogged")
 
 return DragonEngine
