@@ -29,6 +29,7 @@ local DragonEngine = {
 }
 
 local ModuleLocations = {} -- Stores the locations of modulescripts to be lazy-loaded
+local LogHistory = {} -- Stores the the history of all logs
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Boilerplate
@@ -74,10 +75,14 @@ end
 -- @TODO : Design and implement custom logging system with UI
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:Log(LogMessage,LogMessageType)
+	LogMessageType = LogMessageType or "Normal"
+
 	if LogMessage == nil then
 		print("")
 		return
 	end
+
+	table.insert(LogHistory,{Message = LogMessage,Type = LogMessageType})
 	if LogMessageType == "warning" or LogMessageType == "Warning" then
 		warn("[Dragon Engine Server] "..LogMessage)
 	elseif LogMessageType == "error" or LogMessageType == "Error" then
@@ -95,10 +100,14 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:DebugLog(LogMessage,LogMessageType)
 	if DragonEngine.Config.Settings.Debug then
+		LogMessageType = LogMessageType or "Normal"
+		
 		if LogMessage == nil then
 			print("")
 			return
 		end
+
+		table.insert(LogHistory,{Message = LogMessage,Type = LogMessageType})
 		if LogMessageType == "warning" or LogMessageType == "Warning" then
 			warn("[Dragon Engine Server] "..LogMessage)
 		elseif LogMessageType == "error" or LogMessageType == "Error" then
@@ -106,6 +115,28 @@ function DragonEngine:DebugLog(LogMessage,LogMessageType)
 		else
 			print("[Dragon Engine Server] "..LogMessage)
 		end
+	end
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- @Name : GetLogHistory
+-- @Description : Returns the history of the output logs
+-- @Params : OPTIONAL number "MaxLines" - How many lines back of history to return. If omitted, all logs will be returned.
+-- @Example : DragonEngine:GetLogHistory(50)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngine:GetLogHistory(MaxLines)
+	if MaxLines ~= nil then
+		local TrimmedLogs = {}
+
+		for Index = 1,#LogHistory do
+			if Index > #LogHistory - MaxLines then
+				table.insert(TrimmedLogs,LogHistory[Index])
+			end
+		end
+
+		return table.freeze(TrimmedLogs)
+	else
+		return table.freeze(table.clone(LogHistory))
 	end
 end
 
