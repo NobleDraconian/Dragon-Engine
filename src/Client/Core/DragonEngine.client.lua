@@ -30,9 +30,9 @@ DragonEngine.Controllers = {} --Contains all controllers, both running and stopp
 -------------------------------------
 -- Waiting on engine server to run --
 -------------------------------------
-print("")
-print("**** WAITING FOR SERVER ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** WAITING FOR SERVER ****")
+DragonEngine:Log("")
 ReplicatedStorage:WaitForChild("DragonEngine"):WaitForChild("_Loaded") --Waiting for the server engine to load
 
 -------------
@@ -473,10 +473,10 @@ end
 DragonEngine.Config = EngineConfigs
 
 if EngineConfigs.Settings.ShowLogoInOutput then
-	print(ENGINE_LOGO)
+	DragonEngine:Log(ENGINE_LOGO)
 end
 if EngineConfigs.Settings.Debug then
-	warn("[Dragon Engine Server] Debug enabled. Logging will be verbose.")
+	DragonEngine:Log("[Dragon Engine Server] Debug enabled. Logging will be verbose.")
 end
 
 -------------------
@@ -489,56 +489,56 @@ end
 ---------------------
 -- Loading modules --
 ---------------------
-print("")
-print("**** Loading modules ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** Loading modules ****")
+DragonEngine:Log("")
 for _,ModulePaths in pairs(EngineConfigs.ClientPaths.ModulePaths) do
 	for _,ModulePath in pairs(ModulePaths) do
 		DragonEngine:LazyLoadModulesIn(ModulePath)
 	end
 end
-DragonEngine:DebugLog("All modules lazy-loaded!")
+DragonEngine:Log("All modules lazy-loaded!")
 
 --------------------------------------------
 -- Connecting to remote service endpoints --
 --------------------------------------------
-print("")
-print("**** Connecting to service endpoints ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** Connecting to service endpoints ****")
+DragonEngine:Log("")
 DragonEngine:DebugLog("Connecting to service endpoints...")
 for _,ServiceFolder in pairs(Service_Endpoints:GetChildren()) do
 	ConnectToServiceEndpoints(ServiceFolder.Name)
 end
-DragonEngine:DebugLog("All endpoints connected to!")
+DragonEngine:Log("All endpoints connected to!")
 
 ----------------------------------------------------
 --  Loading, initializing and running controllers --
 ----------------------------------------------------
-print("")
-print("**** Loading controllers ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** Loading controllers ****")
+DragonEngine:Log("")
 for _,ControllerPath in pairs(EngineConfigs.ClientPaths.ControllerPaths) do
 	DragonEngine:LoadControllersIn(ControllerPath)
 end
-DragonEngine:DebugLog("All controllers loaded!")
+DragonEngine:Log("All controllers loaded!")
 
-print("")
-print("**** Initializing controllers ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** Initializing controllers ****")
+DragonEngine:Log("")
 for ControllerName,_ in pairs(DragonEngine.Controllers) do
 	DragonEngine:InitializeController(ControllerName)
 end
-DragonEngine:DebugLog("All controllersf initialized!")
+DragonEngine:Log("All controllers initialized!")
 
-print("")
-print("**** Starting controllers ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** Starting controllers ****")
+DragonEngine:Log("")
 for ControllerName,Controller in pairs(DragonEngine.Controllers) do
 	if Controller.Initialized then
 		DragonEngine:StartController(ControllerName)
 	end
 end
-DragonEngine:DebugLog("All services running!")
+DragonEngine:Log("All services running!")
 
 
 ---------------------------------------------
@@ -559,4 +559,4 @@ end)
 -- Indicating that the engine is loaded --
 ------------------------------------------
 shared.DragonEngine = DragonEngine
-print("Dragon Engine "..DragonEngine.Version.." loaded!")
+DragonEngine:Log("Dragon Engine "..DragonEngine.Version.." loaded!")
