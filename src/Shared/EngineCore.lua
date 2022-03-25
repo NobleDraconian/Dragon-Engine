@@ -92,8 +92,8 @@ function DragonEngine:Log(LogMessage,LogMessageType)
 		return
 	end
 
-	table.insert(LogHistory,{Message = LogMessage,Type = LogMessageType})
-	MessageLogged:Fire(LogMessage,LogMessageType)
+	table.insert(LogHistory,{Message = LogMessage,Type = LogMessageType,Timestamp = tostring(DateTime.now().UnixTimestampMillis)})
+	MessageLogged:Fire(LogMessage,LogMessageType,tostring(DateTime.now().UnixTimestampMillis))
 
 	if LogMessageType == "warning" or LogMessageType == "Warning" then
 		warn("[Dragon Engine Server] "..LogMessage)
@@ -113,14 +113,14 @@ end
 function DragonEngine:DebugLog(LogMessage,LogMessageType)
 	if DragonEngine.Config.Settings.Debug then
 		LogMessageType = LogMessageType or "Normal"
-		
+
 		if LogMessage == nil then
 			print("")
 			return
 		end
 
-		table.insert(LogHistory,{Message = LogMessage,Type = LogMessageType})
-		MessageLogged:Fire(LogMessage,LogMessageType)
+		table.insert(LogHistory,{Message = LogMessage,Type = LogMessageType,Timestamp = tostring(DateTime.now().UnixTimestampMillis)})
+		MessageLogged:Fire(LogMessage,LogMessageType,tostring(DateTime.now().UnixTimestampMillis))
 
 		if LogMessageType == "warning" or LogMessageType == "Warning" then
 			warn("[Dragon Engine Server] "..LogMessage)
