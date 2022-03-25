@@ -498,10 +498,10 @@ end
 DragonEngine.Config = EngineConfigs
 
 if EngineConfigs.Settings.ShowLogoInOutput then
-	print(ENGINE_LOGO)
+	DragonEngine:Log(ENGINE_LOGO)
 end
 if EngineConfigs.Settings.Debug then
-	warn("[Dragon Engine Server] Debug enabled. Logging will be verbose.")
+	DragonEngine:Log("[Dragon Engine Server] Debug enabled. Logging will be verbose.","Warning")
 end
 
 -------------------
@@ -514,44 +514,44 @@ end
 ---------------------
 -- Loading modules --
 ---------------------
-print("")
-print("**** Loading modules ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** Loading modules ****")
+DragonEngine:Log("")
 for _,ModulePaths in pairs(EngineConfigs.ServerPaths.ModulePaths) do
 	for _,ModulePath in pairs(ModulePaths) do
 		DragonEngine:LazyLoadModulesIn(ModulePath)
 	end
 end
-DragonEngine:DebugLog("All modules lazy-loaded!")
+DragonEngine:Log("All modules lazy-loaded!")
 
 -------------------------------------------------
 --  Loading, initializing and running services --
 -------------------------------------------------
-print("")
-print("**** Loading services ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** Loading services ****")
+DragonEngine:Log("")
 for _,ServicePath in pairs(EngineConfigs.ServerPaths.ServicePaths) do
 	DragonEngine:LoadServicesIn(ServicePath)
 end
-DragonEngine:DebugLog("All services loaded!")
+DragonEngine:Log("All services loaded!")
 
-print("")
-print("**** Initializing services ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** Initializing services ****")
+DragonEngine:Log("")
 for ServiceName,_ in pairs(DragonEngine.Services) do
 	DragonEngine:InitializeService(ServiceName)
 end
-DragonEngine:DebugLog("All services initialized!")
+DragonEngine:Log("All services initialized!")
 
-print("")
-print("**** Starting services ****")
-print("")
+DragonEngine:Log("")
+DragonEngine:Log("**** Starting services ****")
+DragonEngine:Log("")
 for ServiceName,Service in pairs(DragonEngine.Services) do
 	if Service.Initialized then
 		DragonEngine:StartService(ServiceName)
 	end
 end
-DragonEngine:DebugLog("All services running!")
+DragonEngine:Log("All services running!")
 
 ------------------------------------------
 -- Indicating that the engine is loaded --
@@ -562,4 +562,4 @@ local Engine_Loaded = Instance.new('BoolValue')
       Engine_Loaded.Parent = ReplicatedStorage.DragonEngine
 
 shared.DragonEngine = DragonEngine
-print("Dragon Engine "..DragonEngine.Version.." loaded!")
+DragonEngine:Log("Dragon Engine "..DragonEngine.Version.." loaded!")
