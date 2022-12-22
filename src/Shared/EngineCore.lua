@@ -1,11 +1,20 @@
---[[
-	Dragon Engine Core
+--[=[
+	@class DragonEngine
 
-	Global backend engine for Phoenix Entertainment, LLC.
+	The core of the framework. It handles module-loading, logging, and other aspects that are available on the server and client.
+]=]
 
-	Programmed, designed and developed by @Reshiram110
-	Inspiration by @Crazyman32's 'Aero' framework
---]]
+--- @type LogType string
+--- @within DragonEngine
+--- The type of a log. Valid values are `Normal`, `Warning` and `Error`.
+
+--- @interface FrameworkLog
+--- @within DragonEngine
+--- @field Message string -- The log's message
+--- @field Type LogType -- The log's type
+--- @field Timestamp string -- The timestamp of when the log was created
+---
+--- A table containing the metadata of a single log.
 
 ---------------------
 -- Roblox Services --
@@ -33,7 +42,7 @@ local LogHistory = {} -- Stores the the history of all logs
 local MessageLogged; -- Fired when a message is logged via Log() or DebugLog()
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Boilerplate
+-- Helper functions
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local function IsModuleIgnored(Module)
 	for _,ModuleName in pairs(DragonEngine.Config.Settings.IgnoredModules) do
@@ -55,9 +64,17 @@ local function RegisterEvent(EventName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : GetOutput
--- @Description : Returns output from the engine.
--- @Params : Variant "Value" - The value(s) for the engine to return from this call.
+-- API Methods
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- Returns output from the framework. Useful for checking if the framework is being accessed properly.
+--- ```lua
+--- print(DragonEngine:GetOutput("HelloWorld",os.clock(),true))
+--- ```
+---
+--- @param ... any -- The value(s) for the framework to return from this API call.
+--- @return string -- The output the framework returns in response to this API call.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:GetOutput(...)
 	local Values = {...}
@@ -78,11 +95,14 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : Log
--- @Description : Adds the specified text to the engine logs.
--- @Params : string "LogMessage" - The message to add to the logs
---           DragonEngine Enum "LogMessageType" - The type of message being logged
--- @TODO : Design and implement custom logging system with UI
+--- Adds the given text to the framework's logs.
+--- ```lua
+--- DragonEngine:Log("EquipPet() was called, but the player has no avatar!","Warning")
+--- ```
+---
+--- @param LogMessage string -- The message to add to the logs
+--- @param LogMessageType LogType -- The type of the message that is being logged.
+--- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:Log(LogMessage,LogMessageType)
 	LogMessageType = LogMessageType or "Normal"
@@ -105,10 +125,17 @@ function DragonEngine:Log(LogMessage,LogMessageType)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : DebugLog
--- @Description : Adds the specified text to the engine logs, and will only dispay if debug is set to true.
--- @Params : string "LogMessage" - The message to add to the logs
---           DragonEngine Enum "LogMessageType" - The type of message being logged
+--- Adds the given text to the framework's logs if FrameworkSettings.Debug is `true`.
+--- ```lua
+--- DragonEngine:DebugLog(
+--- 	("The item '%s' was purchased by player '%s'"):format(ItemName,Player.Name),
+--- 	"Normal"
+--- )
+--- ```
+---
+--- @param LogMessage string -- The message to add to the logs
+--- @param LogMessageType LogType -- The type of the message that is being logged.
+--- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:DebugLog(LogMessage,LogMessageType)
 	if DragonEngine.Config.Settings.Debug then
@@ -133,10 +160,13 @@ function DragonEngine:DebugLog(LogMessage,LogMessageType)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : GetLogHistory
--- @Description : Returns the history of the output logs
--- @Params : OPTIONAL number "MaxLines" - How many lines back of history to return. If omitted, all logs will be returned.
--- @Example : DragonEngine:GetLogHistory(50)
+--- Returns the history of the output logs, in ascending order (older entries first).
+--- ```lua
+--- print(DragonEngine:GetLogHistory(50)[4].Message)
+--- ```
+---
+--- @param MaxLines integer -- How many lines back of history to return. If omitted, all logs will be returned.
+--- @return {FrameworkLog} -- The logs pulled from the log history, in ascending order
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:GetLogHistory(MaxLines)
 	if MaxLines ~= nil then
@@ -155,13 +185,15 @@ function DragonEngine:GetLogHistory(MaxLines)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Modules
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : GetModule
--- @Description : Gets and returns the specified module from the framework
--- @Params : string "ModuleName" - The name of the module to get from the framework
+--- Gets and returns the specified module from the framework if it exists. Returns `nil` if it does not exist.
+--- If this is the first time the module is being called, it will be lazyloaded.
+--- ```lua
+--- local AvatarUtils = DragonEngine:GetModule("AvatarUtilities")
+--- AvatarUtils:CreateCharacterModelFromPlayer(Player)
+--- ```
+---
+--- @param ModuleName string -- The name of the module to get from the framework
+--- @return table -- The module with the given name
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:GetModule(ModuleName)
 
@@ -174,9 +206,18 @@ function DragonEngine:GetModule(ModuleName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadModule
--- @Description : Loads the specified module into the framework
--- @Params : Instance <ModuleScript> 'Module' - The module to load
+--- Loads the specified module and registers it with the framework
+--- ```lua
+--- local LoadSuccess,LoadErrorMessage = DragonEngine:LoadModule(ModuleScript)
+--- if not LoadSuccess then
+--- 	print("Module load failed : " .. LoadErrorMessage)
+--- end
+--- ```
+---
+--- @private
+--- @param Module ModuleScript -- The ModuleScript to register with the framework
+--- @return bool -- A `bool` describing whether or not the module was successfully loaded
+--- @return string -- A `string` describing the error that occured while loading the module
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:LoadModule(Module)
 
@@ -212,9 +253,19 @@ function DragonEngine:LoadModule(Module)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LazyLoadModulesIn
--- @Description : Lazy-loads all modules in the given container into the framework
--- @Params : Instance variant 'Container' - The container to lazy-load the modules from
+--- Registers all ModuleScripts in the given container with the framework,
+--- allowing them to be lazy-loaded when called via `DragonEngine:GetModule()`.
+--- ```lua
+--- DragonEngine:LazyLoadModulesIn(ReplicatedStorage.Modules)
+--- ```
+--- :::caution
+--- Only modules that are children of a `Model` or `Folder` instance will be considered for lazy-loading. Other instance types
+--- are not supported at this time.
+--- :::
+---
+--- @private
+--- @param Container Folder -- The folder that contains the ModuleScripts.
+--- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:LazyLoadModulesIn(Container)
 
@@ -228,13 +279,12 @@ function DragonEngine:LazyLoadModulesIn(Container)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- ENUMS
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : DefineEnum
--- @Description : Creates an enum with the given name.
--- @Params : string "EnumName" - The name of the enum
+--- Creates an enum with the given name.
+---
+--- @deprecated v1.0.0 -- This was a redundant feature of the framework. You can easily make your own enum library & load it through the framework!
+--- @param EnumName string -- The name of the enum to create
+--- @param EnumTable table -- A table containing possible enum values
+--- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:DefineEnum(EnumName,EnumTable)
 
@@ -257,6 +307,10 @@ function DragonEngine:DefineEnum(EnumName,EnumTable)
 
 	self.Enum[EnumName] = EnumTable
 end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- End of APIs
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------
 -- Listening for module calls --

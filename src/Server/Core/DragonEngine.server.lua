@@ -1,8 +1,23 @@
---[[
-	Dragon Engine Server
+--[=[
+	@class DragonEngineServer
+	@server
 
-	Handles the server sided aspects for the framework, including services.
---]]
+	Handles the server sided aspects of the framework such as services, creating remotes, etc.
+]=]
+
+--- @interface Service
+--- @within DragonEngineServer
+--- @field Client ServiceClient -- The client-facing part of the service
+--- @field Init function -- The service's `Init` method.
+--- @field Start function -- The service's `Start` method.
+--- @field ... function -- The service's various defined methods.
+--- The server-facing part of a microservice.
+
+--- @interface ServiceClient
+--- @within DragonEngineServer
+--- @field Server Service -- A reference to the service's server-facing APIs. Will be `nil` on the client.
+--- @field ... function -- The service's various defined client-facing APIs.
+--- The client-facing part of a microservice.
 
 ---------------------
 -- Roblox Services --
@@ -13,7 +28,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 --------------
 -- REQUIRES --
 --------------
-local DragonEngine = require(ReplicatedStorage.DragonEngine.EngineCore)
+local DragonEngineServer = require(ReplicatedStorage.DragonEngine.EngineCore)
 local ENGINE_LOGO = require(ReplicatedStorage.DragonEngine.Logo)
 local Boilerplate = require(ReplicatedStorage.DragonEngine.Boilerplate)
 local EngineConfigs = {
@@ -36,7 +51,7 @@ local ServiceEvents_Folder = Instance.new('Folder')
 local Service_ClientEndpoints = Instance.new('Folder')
 	  Service_ClientEndpoints.Name = "Service_ClientEndpoints"
 	  Service_ClientEndpoints.Parent = ReplicatedStorage.DragonEngine.Network
-DragonEngine.Services = {} --Contains all services, both running and stopped
+DragonEngineServer.Services = {} --Contains all services, both running and stopped
 
 ------------
 -- Events --
@@ -49,11 +64,11 @@ local ServiceLoaded_ClientEvent = Instance.new('RemoteEvent')
 local ServiceUnloaded_ClientEvent = Instance.new('RemoteEvent')
 	  ServiceUnloaded_ClientEvent.Name = "ServiceUnloaded"
 	  ServiceUnloaded_ClientEvent.Parent = Framework_NetworkFolder
-DragonEngine.ServiceLoaded = Service_Loaded_ServerEvent.Event
-DragonEngine.ServiceUnloaded = Service_Unloaded_ServerEvent.Event
+DragonEngineServer.ServiceLoaded = Service_Loaded_ServerEvent.Event
+DragonEngineServer.ServiceUnloaded = Service_Unloaded_ServerEvent.Event
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Boilerplate
+-- Helper functions
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local function IsModuleIgnored(Module)
 	for _,ModuleName in pairs(EngineConfigs.Settings.IgnoredModules) do
@@ -70,24 +85,35 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name: GetService
--- @Description : Returns the requested service. Similiar to game:GetService().
---               *This API exists because the internal 'service' tables can change in future updates.
--- @Params : string "ServiceName" - The name of the service to retrieve
+--- Returns a reference to the specified service. Similar to `game:GetService()` in the Roblox API.
+--- ```lua
+--- local MarketService = DragonEngine:GetService("MarketService")
+--- MarketService:GiveItem(SomePlayer,"HealthPotion",5)
+--- ```
+---
+--- @param ServiceName string -- The name of the service to get a reference to
+--- @return Service -- The service with the given name
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:GetService(ServiceName)
-	assert(DragonEngine.Services[ServiceName] ~= nil,"[Dragon Engine Server] GetService() : Service '"..ServiceName.."' was not loaded or does not exist.")
-	return DragonEngine.Services[ServiceName]
+function DragonEngineServer:GetService(ServiceName)
+	assert(DragonEngineServer.Services[ServiceName] ~= nil,"[Dragon Engine Server] GetService() : Service '"..ServiceName.."' was not loaded or does not exist.")
+	return DragonEngineServer.Services[ServiceName]
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadService
--- @Description : Loads the specified service module into the engine. Returns false if the service fails to load.
--- @Params : Instance <ModuleScript> "ServiceModule" - The service module to load into the engine
--- @Returns : Boolean "ServiceLoaded" - Will be TRUE if the service is loaded successfully, will be FALSE if the service failed to load.
---            string "ErrorMessage" - The error message if loading the service failed. Is nil if loading succeeded.
+--- Loads the given service module into the framework, making it accessible via `DragonEngineServer:GetService()`.
+--- ```lua
+--- local Success,Error = DragonEngine:LoadService(ServerScriptService.Services.AvatarService)
+--- if not Success then
+--- 	print("Failed to load AvatarService : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ServiceModule ModuleScript -- The service modulescript to load into the framework
+--- @return bool -- A `bool` describing whether or not the service was successfully loaded
+--- @return string -- A `string` containing the error message if the service failed to load. Will be `nil` if the load is successful.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadService(ServiceModule)
+function DragonEngineServer:LoadService(ServiceModule)
 
 	----------------
 	-- Assertions --
@@ -161,7 +187,7 @@ function DragonEngine:LoadService(ServiceModule)
 		Service.Status = "Uninitialized"
 		Service.Initialized = false
 
-		setmetatable(Service,{__index = DragonEngine}) --Exposing Dragon Engine to the service
+		setmetatable(Service,{__index = DragonEngineServer}) --Exposing Dragon Engine to the service
 		self.Services[ServiceName] = Service
 
 		self:DebugLog("Service '"..ServiceName.."' loaded.")
@@ -172,28 +198,43 @@ function DragonEngine:LoadService(ServiceModule)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadServicesIn
--- @Description : Loads all services in the given container.
--- @Params : Instance "Container" - The container holding all of the service modules.
+--- Loads all services in the given container via `DragonEngine:LoadService()`.
+--- ```lua
+--- DragonEngine:LoadServicesIn(ServerScriptService.Services)
+--- ```
+--- :::caution
+--- Only modules that are children of a `Model` or `Folder` instance will be considered for lazy-loading. Other instance types
+--- are not supported at this time.
+--- :::
+---
+--- @private
+--- @param Container Folder -- The folder that contains the service modules
+--- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadServicesIn(Container)
+function DragonEngineServer:LoadServicesIn(Container)
 	for _,ServiceModule in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
 		if not IsModuleIgnored(ServiceModule) then
-			DragonEngine:LoadService(ServiceModule)
+			DragonEngineServer:LoadService(ServiceModule)
 		end
 	end
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : UnloadService
--- @Description : Unloads the specified service from the engine and destroys any endpoints/events it created.
---                This function will attempt to Stop() the service before unloading it, to clean state.
--- @Params : string "ServiceName" - The name of the service to unload.
--- @Returns : Boolean "ServiceUnloaded" - Will be TRUE if the service is unloaded successfully, will be FALSE if the service failed to unload.
---            string "ErrorMessage" - The error message if unloading the service failed. Is nil if unloading succeeded.
-
+--- Unloads the specified service from the framework and destroys any remotes/bindables it created.
+--- This API will attempt to call `DragonEngine:StopService()` with the service before unloading it, to clean state.
+--- ```lua
+--- local Success,Error = DragonEngine:UnloadService("MemeService")
+--- if not Success then
+--- 	print("Failed to unload memeservice : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ServiceName string -- The name of the service to unload
+--- @return bool -- A `bool` describing whether or not the service was successfully unloaded
+--- @return string -- A `string` containing the error message if the service fails to be unloaded. Is `nil` if unloading succeeded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:UnloadService(ServiceName)
+function DragonEngineServer:UnloadService(ServiceName)
 
 	----------------
 	-- Assertions --
@@ -244,13 +285,20 @@ function DragonEngine:UnloadService(ServiceName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : InitializeService
--- @Description : Initializes the specified service.
--- @Params : string "ServiceName" - The name of the service to initialize
--- @Returns : bool "Success" - Whether or not the service was successfully initialized.
---            string "Error" - The error message if the initialization failed. Is nil if initialization succeeded.
+--- Calls `:Init()` on the specified service.
+--- ```lua
+--- local Success,Error = DragonEngine:InitializeService("MarketService")
+--- if not Success then
+--- 	print("Failed to initialize marketservice : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ServiceName string -- The name of the service to initialize
+--- @return bool -- A `bool` describing whether or not the service was successfully initialized
+--- @return string -- A `string` containing the error message if the service fails to be initialized. Is `nil` if initialization succeeded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:InitializeService(ServiceName)
+function DragonEngineServer:InitializeService(ServiceName)
 
 	----------------
 	-- Assertions --
@@ -275,7 +323,7 @@ function DragonEngine:InitializeService(ServiceName)
 			Service:Init()
 		end)
 		if not Success then -- Initialization failed
-			DragonEngine:Log("Failed to initialize service '"..ServiceName.."' : "..Error,"Warning")
+			DragonEngineServer:Log("Failed to initialize service '"..ServiceName.."' : "..Error,"Warning")
 			return false,Error
 		end
 
@@ -291,12 +339,20 @@ function DragonEngine:InitializeService(ServiceName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : StartService
--- @Description : Starts the specified service.
--- @Params : bool "Success" - Whether or not the service was successfully started.
---           string "Error" - The error message if starting the service failed. Is nil if the start succeeded.
+--- Calls `:Start()` on the specified service.
+--- ```lua
+--- local Success,Error = DragonEngine:StartService("MarketService")
+--- if not Success then
+--- 	print("Failed to start marketservice : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ServiceName string -- The name of the service to start
+--- @return bool -- A `bool` describing whether or not the service was successfully started.
+--- @return string -- A `string` containing the error message if the service fails to successfully start. Is `nil` if start was successful.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:StartService(ServiceName)
+function DragonEngineServer:StartService(ServiceName)
 
 	----------------
 	-- Assertions --
@@ -321,7 +377,7 @@ function DragonEngine:StartService(ServiceName)
 			coroutine.wrap(Service.Start)(Service)
 		end)
 		if not Success then
-			DragonEngine:Log("Failed to start service '"..ServiceName.."' : "..Error,"Warning")
+			DragonEngineServer:Log("Failed to start service '"..ServiceName.."' : "..Error,"Warning")
 			return false,Error
 		end
 	else --Start function doesn't exist
@@ -334,12 +390,20 @@ function DragonEngine:StartService(ServiceName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : StopService
--- @Description : Stops the specified service.
--- @Params : bool "Success" - Whether or not the service was successfully stopped.
---           string "Error" - The error message if stopping the service failed. Is nil if the start succeeded.
+--- Calls `:Stop()` on the specified service
+--- ```lua
+--- local Success,Error = DragonEngine:StopService("MarketService")
+--- if not Success then
+--- 	print("Failed to stop marketservice : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ServiceName string -- The name of the service to stop
+--- @return bool -- A `bool` describing whether or not the service was successfully stopped
+--- @return string -- A `string` containing the error message if the service fails to stop. Will be `nil` if the stop is successful.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:StopService(ServiceName)
+function DragonEngineServer:StopService(ServiceName)
 	----------------
 	-- Assertions --
 	----------------
@@ -362,7 +426,7 @@ function DragonEngine:StopService(ServiceName)
 			Service:Stop()
 		end)
 		if not Success then
-			DragonEngine:Log("Failed to stop service '"..ServiceName.."' : "..Error,"Warning")
+			DragonEngineServer:Log("Failed to stop service '"..ServiceName.."' : "..Error,"Warning")
 			return false,Error
 		end
 		Service.Status = "Stopped"
@@ -376,13 +440,22 @@ function DragonEngine:StopService(ServiceName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : RegisterClientEndpoint
--- @Description : Registers a client endpoint for the service calling that the server can invoke to get client information.
---!               USE THIS WITH CAUTION. USING THE CLIENT AS A SOURCE OF TRUTH IS DANGEROUS.
--- @Params : string "EndpointName" - The name to assign to the endpoint
--- @Returns : Instance <RemoteFunction> "RemoteFunction" - The registered client endpoint.
+--- Registers a RemoteFunction for the calling service that the server can invoke to get client information.
+--- ```lua
+--- local MyRemote = DragonEngine:RegisterClientEndpoint("MyRemote")
+--- local LikesJazz = MyRemote:InvokeClient(Player,"Do ya like jazz?")
+--- ```
+--- :::warning
+--- This API should only be called from a service! Calling it outside of a service will cause errors.
+--- :::
+--- :::caution
+--- Use with caution! Using the client as a source of truth is dangerous and often bad practice.
+--- :::
+---
+--- @param EndpointName string -- The name to assign to the endpoint
+--- @return RemoteFunction -- The RemoteFunction that was registered with the framework
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:RegisterClientEndpoint(EndpointName)
+function DragonEngineServer:RegisterClientEndpoint(EndpointName)
 	
 	----------------
 	-- Assertions --
@@ -400,14 +473,19 @@ function DragonEngine:RegisterClientEndpoint(EndpointName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : RegisterServiceClientEvent
--- @Description : Registers a client event for the service calling. MUST BE CALLED FROM INSIDE A SERVICE MODULE.
--- @Params : string "Name" - The name to assign to the client event.
--- @Returns : Instance <RemoteEvent> "RemoteEvent" - The service client event.
--- @TODO : Create endpoint folder for service if it doesn't exist.
---         This occurs when the service has no endpoint functions, but has client events.
+--- Registers a RemoteEvent for the calling service that the server can fire to clients.
+--- ```lua
+--- local AnnouncementRemote = DragonEngine:RegisterServiceClientEvent("AnnouncementMade")
+--- AnnouncementRemote:FireAllClients("Teh epic duck is coming!!!")
+--- ```
+--- :::warning
+--- This API should only be called from a service! Calling it outside of a service will cause errors.
+--- :::
+---
+--- @param Name string -- The name to assign to the RemoteEvent
+--- @return RemoteEvent -- The RemoteEvent that was registered with the framework
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:RegisterServiceClientEvent(Name)
+function DragonEngineServer:RegisterServiceClientEvent(Name)
 
 	----------------
 	-- Assertions --
@@ -425,12 +503,19 @@ function DragonEngine:RegisterServiceClientEvent(Name)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : RegisterServiceServerEvent
--- @Description : Registers a server event for the service calling. MUST BE CALLED FROM INSIDE A SERVICE MODULE.
--- @Params : string "Name" - The name to assign to the server event.
--- @Retruns : Instance <BindableEvent> "BindableEvent" - The service server event.
+--- Registers a BindableEvent for the calling service that it can use to fire server-side events.
+--- ```lua
+--- local ItemSpawnedBindable = DragonEngine:RegisterServiceServerEvent("ItemSpawned")
+--- ItemSpawnedBindable:Fire(ItemID,ItemPosition)
+--- ```
+--- :::warning
+--- This API should only be called from a service! Calling it outside of a service will cause errors.
+--- :::
+---
+--- @param Name string -- The name to assign to the BindableEvent
+--- @return BindableEvent -- The BindableEvent that was registered with the framework
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:RegisterServiceServerEvent(Name)
+function DragonEngineServer:RegisterServiceServerEvent(Name)
 
 	----------------
 	-- Assertions --
@@ -495,63 +580,63 @@ if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
 	end)
 	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..(Error or ""))
 end
-DragonEngine.Config = EngineConfigs
+DragonEngineServer.Config = EngineConfigs
 
 if EngineConfigs.Settings.ShowLogoInOutput then
-	DragonEngine:Log(ENGINE_LOGO)
+	DragonEngineServer:Log(ENGINE_LOGO)
 end
 if EngineConfigs.Settings.Debug then
-	DragonEngine:Log("[Dragon Engine Server] Debug enabled. Logging will be verbose.","Warning")
+	DragonEngineServer:Log("[Dragon Engine Server] Debug enabled. Logging will be verbose.","Warning")
 end
 
 -------------------
 -- Loading Enums --
 -------------------
 for EnumName,EnumVal in pairs(EngineConfigs.Settings.Enums) do
-	DragonEngine:DefineEnum(EnumName,EnumVal)
+	DragonEngineServer:DefineEnum(EnumName,EnumVal)
 end
 
 ---------------------
 -- Loading modules --
 ---------------------
-DragonEngine:Log("")
-DragonEngine:Log("**** Loading modules ****")
-DragonEngine:Log("")
+DragonEngineServer:Log("")
+DragonEngineServer:Log("**** Loading modules ****")
+DragonEngineServer:Log("")
 for _,ModulePaths in pairs(EngineConfigs.ServerPaths.ModulePaths) do
 	for _,ModulePath in pairs(ModulePaths) do
-		DragonEngine:LazyLoadModulesIn(ModulePath)
+		DragonEngineServer:LazyLoadModulesIn(ModulePath)
 	end
 end
-DragonEngine:Log("All modules lazy-loaded!")
+DragonEngineServer:Log("All modules lazy-loaded!")
 
 -------------------------------------------------
 --  Loading, initializing and running services --
 -------------------------------------------------
-DragonEngine:Log("")
-DragonEngine:Log("**** Loading services ****")
-DragonEngine:Log("")
+DragonEngineServer:Log("")
+DragonEngineServer:Log("**** Loading services ****")
+DragonEngineServer:Log("")
 for _,ServicePath in pairs(EngineConfigs.ServerPaths.ServicePaths) do
-	DragonEngine:LoadServicesIn(ServicePath)
+	DragonEngineServer:LoadServicesIn(ServicePath)
 end
-DragonEngine:Log("All services loaded!")
+DragonEngineServer:Log("All services loaded!")
 
-DragonEngine:Log("")
-DragonEngine:Log("**** Initializing services ****")
-DragonEngine:Log("")
-for ServiceName,_ in pairs(DragonEngine.Services) do
-	DragonEngine:InitializeService(ServiceName)
+DragonEngineServer:Log("")
+DragonEngineServer:Log("**** Initializing services ****")
+DragonEngineServer:Log("")
+for ServiceName,_ in pairs(DragonEngineServer.Services) do
+	DragonEngineServer:InitializeService(ServiceName)
 end
-DragonEngine:Log("All services initialized!")
+DragonEngineServer:Log("All services initialized!")
 
-DragonEngine:Log("")
-DragonEngine:Log("**** Starting services ****")
-DragonEngine:Log("")
-for ServiceName,Service in pairs(DragonEngine.Services) do
+DragonEngineServer:Log("")
+DragonEngineServer:Log("**** Starting services ****")
+DragonEngineServer:Log("")
+for ServiceName,Service in pairs(DragonEngineServer.Services) do
 	if Service.Initialized then
-		DragonEngine:StartService(ServiceName)
+		DragonEngineServer:StartService(ServiceName)
 	end
 end
-DragonEngine:Log("All services running!")
+DragonEngineServer:Log("All services running!")
 
 ------------------------------------------
 -- Indicating that the engine is loaded --
@@ -561,5 +646,5 @@ local Engine_Loaded = Instance.new('BoolValue')
       Engine_Loaded.Value = true
       Engine_Loaded.Parent = ReplicatedStorage.DragonEngine
 
-shared.DragonEngine = DragonEngine
-DragonEngine:Log("Dragon Engine "..DragonEngine.Version.." loaded!")
+shared.DragonEngine = DragonEngineServer
+DragonEngineServer:Log("Dragon Engine "..DragonEngineServer.Version.." loaded!")

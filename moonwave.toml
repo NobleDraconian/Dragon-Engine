@@ -1,0 +1,21 @@
+classOrder = [
+	"DragonEngine",
+	"DragonEngineServer",
+	"DragonEngineClient"
+]
+
+[docusaurus]
+favicon = "Assets/Web/Branding/Dragon_Engine_Logo_White.png"
+tagline = "Microservice-based game framework for Roblox"
+
+[home]
+enabled = true
+includeReadme = false
+
+[[navbar.items]]
+href = "https://discord.gg/rSDCDrWDdU"
+label = "Discord"
+position = "right"
+
+[footer]
+copyright = "Copyright © 2022 Noble_Draconian. Built with Moonwave and Docusaurus"
