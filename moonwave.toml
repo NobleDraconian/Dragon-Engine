@@ -1,4 +1,8 @@
-classOrder = []
+classOrder = [
+	"DragonEngine",
+	"DragonEngineServer",
+	"DragonEngineClient"
+]
 
 [docusaurus]
 url = "https://nobledraconian.dev"
