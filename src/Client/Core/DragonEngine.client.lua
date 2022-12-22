@@ -1,8 +1,16 @@
---[[
-	Dragon Engine Client
+--[=[
+	@class DragonEngineClient
+	@client
 
-	Handles the client sided aspects of the framework, including controllers.
---]]
+	Handles the client sided aspects of the framework such as controllers, connecting to remotes, etc.
+]=]
+
+--- @interface Controller
+--- @within DragonEngineClient
+--- @field Init function -- The controller's `Init` method.
+--- @field Start function -- The controller's `Start` method.
+--- @field ... function -- The controller's various defined methods.
+--- A client-sided microservice.
 
 ---------------------
 -- Roblox Services --
@@ -13,7 +21,7 @@ local StarterPlayer = game:GetService("StarterPlayer")
 --------------
 -- REQUIRES --
 --------------
-local DragonEngine = require(ReplicatedStorage.DragonEngine.EngineCore)
+local DragonEngineClient = require(ReplicatedStorage.DragonEngine.EngineCore)
 local ENGINE_LOGO = require(ReplicatedStorage.DragonEngine.Logo)
 local Boilerplate = require(ReplicatedStorage.DragonEngine.Boilerplate)
 local EngineConfigs = {
@@ -24,15 +32,15 @@ local EngineConfigs = {
 -------------
 -- DEFINES --
 -------------
-DragonEngine.Services = {} --Contains all services, both running and stopped
-DragonEngine.Controllers = {} --Contains all controllers, both running and stopped
+DragonEngineClient.Services = {} --Contains all services, both running and stopped
+DragonEngineClient.Controllers = {} --Contains all controllers, both running and stopped
 
 -------------------------------------
 -- Waiting on engine server to run --
 -------------------------------------
-DragonEngine:Log("")
-DragonEngine:Log("**** WAITING FOR SERVER ****")
-DragonEngine:Log("")
+DragonEngineClient:Log("")
+DragonEngineClient:Log("**** WAITING FOR SERVER ****")
+DragonEngineClient:Log("")
 ReplicatedStorage:WaitForChild("DragonEngine"):WaitForChild("_Loaded") --Waiting for the server engine to load
 
 -------------
@@ -48,13 +56,13 @@ local Controller_Events = Instance.new('Folder') --A folder containing the clien
 -- Events --
 ------------
 local Service_Loaded = ReplicatedStorage.DragonEngine.Network.ServiceLoaded.OnClientEvent --Fired when a service is loaded.
-DragonEngine.ServiceLoaded = Service_Loaded
+DragonEngineClient.ServiceLoaded = Service_Loaded
 
 local Service_Unloaded = ReplicatedStorage.DragonEngine.Network.ServiceUnloaded.OnClientEvent --Fired when a service is unloaded.
-DragonEngine.ServiceUnloaded = Service_Unloaded
+DragonEngineClient.ServiceUnloaded = Service_Unloaded
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Boilerplate
+-- Helper functions
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local function IsModuleIgnored(Module)
 	for _,ModuleName in pairs(EngineConfigs.Settings.IgnoredModules) do
@@ -87,76 +95,88 @@ local function ConnectToServiceEndpoints(ServiceName)
 	-----------------------------
 	-- Connecting to endpoints --
 	-----------------------------
-	DragonEngine:DebugLog("Connecting to endpoints for service '"..ServiceName.."'")
+	DragonEngineClient:DebugLog("Connecting to endpoints for service '"..ServiceName.."'")
 	local Service = {}
 
 	for _,RemoteFunction in pairs(Service_EndpointFolder:GetChildren()) do
 		if RemoteFunction:IsA("RemoteFunction") then
-			DragonEngine:DebugLog("Connecting to remote function '"..Service_EndpointFolder.Name.."."..RemoteFunction.Name.."'...")
+			DragonEngineClient:DebugLog("Connecting to remote function '"..Service_EndpointFolder.Name.."."..RemoteFunction.Name.."'...")
 
 			Service[RemoteFunction.Name] = function(self,...) --We seperate 'self' to ommit it from the server call.
 				return RemoteFunction:InvokeServer(...)
 			end
 		elseif RemoteFunction:IsA("RemoteEvent") then
-			DragonEngine:DebugLog("Registered remote event '"..Service_EndpointFolder.Name.."."..RemoteFunction.Name.."'.")
+			DragonEngineClient:DebugLog("Registered remote event '"..Service_EndpointFolder.Name.."."..RemoteFunction.Name.."'.")
 			Service[RemoteFunction.Name] = RemoteFunction.OnClientEvent
 		end
 	end
 
-	DragonEngine.Services[Service_EndpointFolder.Name] = Service
-	DragonEngine:DebugLog("Connected to all endpoints for service '"..ServiceName.."'.")
+	DragonEngineClient.Services[Service_EndpointFolder.Name] = Service
+	DragonEngineClient:DebugLog("Connected to all endpoints for service '"..ServiceName.."'.")
 
 	------------------------------------------
 	-- Registering service client endpoints --
 	------------------------------------------
-	DragonEngine:DebugLog("Registering client endpoints for service '"..ServiceName.."'")
+	DragonEngineClient:DebugLog("Registering client endpoints for service '"..ServiceName.."'")
 
 	for _,RemoteFunction in pairs(Service_ClientEndpointFolder:GetChildren()) do
 		if RemoteFunction:IsA("RemoteFunction") then
 			Service[RemoteFunction.Name] = RemoteFunction
 
-			DragonEngine:DebugLog("Registered client endpoint '"..RemoteFunction.Name.."' for service '"..ServiceName.."'")
+			DragonEngineClient:DebugLog("Registered client endpoint '"..RemoteFunction.Name.."' for service '"..ServiceName.."'")
 		end
 	end
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- CONTROLLERS
+-- API Methods
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
--------------
--- DEFINES --
--------------
-
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : GetService
--- @Description : Returns the requested service
--- @Params : string "ServiceName" - The name of the service to retrieve
+--- Returns a reference to the requested service
+--- ```lua
+--- local MarketService = DragonEngine:GetService("MarketService")
+--- MarketService:RequestPurchase("HealthPotion",5)
+--- ```
+---
+--- @param ServiceName string -- The name of the service to get a reference to
+--- @return ServiceClient -- The service with the given name
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:GetService(ServiceName)
-	assert(DragonEngine.Services[ServiceName] ~= nil,"[Dragon Engine Client] GetService() : Service '"..ServiceName.."' was not loaded or does not exist.")
-	return DragonEngine.Services[ServiceName]
+function DragonEngineClient:GetService(ServiceName)
+	assert(DragonEngineClient.Services[ServiceName] ~= nil,"[Dragon Engine Client] GetService() : Service '"..ServiceName.."' was not loaded or does not exist.")
+	return DragonEngineClient.Services[ServiceName]
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name: GetController
--- @Description : Returns the requested controller.
---                Similiar to game:GetService().
--- @Params : string "ControllerName" - The name of the Controller to retrieve
+--- Returns a reference to the requested controller
+--- ```lua
+--- local UIController = DragonEngine:GetController("UIController")
+--- UIController:DisplayDialogue("Do you like Cake, or Pie?","Cake",Pie")
+--- ```
+---
+--- @param ControllerName string -- The name of the controller to get a reference to
+--- @return Controller -- The controller with the given name
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:GetController(ControllerName)
-	assert(DragonEngine.Controllers[ControllerName] ~= nil,"[Dragon Engine Client] GetController() : Controller '"..ControllerName.."' was not loaded or does not exist.")
-	return DragonEngine.Controllers[ControllerName]
+function DragonEngineClient:GetController(ControllerName)
+	assert(DragonEngineClient.Controllers[ControllerName] ~= nil,"[Dragon Engine Client] GetController() : Controller '"..ControllerName.."' was not loaded or does not exist.")
+	return DragonEngineClient.Controllers[ControllerName]
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadController
--- @Description : Loads the specified Controller module into the engine. Returns false if the Controller fails to load.
--- @Params : Instance <ModuleScript> "ControllerModule" - The Controller module to load into the engine
--- @Returns : Boolean "ControllerLoaded" - Will be TRUE if the Controller is loaded successfully, will be FALSE if the Controller failed to load.
---            string "ErrorMessage" - The error message if loading the Controller failed. Is nil if loading succeeded.
+--- Loads the given controller module into the framework, making it accessible via `DragonEngineServer:GetController()`.
+--- ```lua
+--- local Success,Error = DragonEngine:LoadController(LocalPlayer.PlayerScripts.Controllers.UIController)
+--- if not Success then
+--- 	print("Failed to load UIController : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ControllerModule ModuleScript -- The Controller modulescript to load into the framework
+--- @return bool -- A `bool` describing whether or not the controller was successfully loaded
+--- @return string -- A `string` containing the error message if the controller failed to load. Will be `nil` if the load is successful.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadController(ControllerModule)
+function DragonEngineClient:LoadController(ControllerModule)
 
 	----------------
 	-- Assertions --
@@ -186,7 +206,7 @@ function DragonEngine:LoadController(ControllerModule)
 	else --Controller module was loaded
 
 		---------------------------------------------
-		-- Adding Controller to DragonEngine.Controllers --
+		-- Adding Controller to DragonEngineClient.Controllers --
 		---------------------------------------------
 		local EventsFolder = Instance.new('Folder') --Container for server sided events for this Controller
 		      EventsFolder.Name = ControllerName
@@ -197,7 +217,7 @@ function DragonEngine:LoadController(ControllerModule)
 		Controller.Initialized = false
 		Controller._ClientEventsFolder = EventsFolder
 
-		setmetatable(Controller,{__index = DragonEngine}) --Exposing Dragon Engine to the Controller
+		setmetatable(Controller,{__index = DragonEngineClient}) --Exposing Dragon Engine to the Controller
 		self.Controllers[ControllerName] = Controller
 
 		self:DebugLog("Controller '"..ControllerName.."' loaded.")
@@ -206,27 +226,43 @@ function DragonEngine:LoadController(ControllerModule)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : LoadControllersIn
--- @Description : Loads all Controllers in the given container.
--- @Params : Instance "Container" - The container holding all of the Controller modules.
+--- Loads all controllers in the given container via `DragonEngine:LoadController()`.
+--- ```lua
+--- DragonEngine:LoadControllersIn(LocalPlayer.PlayerScripts.Controllers)
+--- ```
+--- :::caution
+--- Only modules that are children of a `Model` or `Folder` instance will be considered for lazy-loading. Other instance types
+--- are not supported at this time.
+--- :::
+---
+--- @private
+--- @param Container Folder -- The folder that contains the controller modules
+--- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:LoadControllersIn(Container)
+function DragonEngineClient:LoadControllersIn(Container)
 	for _,ControllerModule in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
 		if not IsModuleIgnored(ControllerModule) then
-			DragonEngine:LoadController(ControllerModule)
+			DragonEngineClient:LoadController(ControllerModule)
 		end
 	end
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : UnloadController
--- @Description : Unloads the specified Controller from the engine and destroys any endpoints/events it created.
---                This function will attempt to Stop() the controller before unloading it, to clean state.
--- @Params : string "ControllerName" - The name of the Controller to unload.
--- @Returns : Boolean "ControllerUnloaded" - Will be TRUE if the Controller is unloaded successfully, will be FALSE if the Controller failed to unload.
---            string "ErrorMessage" - The error message if unloading the Controller failed. Is nil if unloading succeeded.
+--- Unloads the specified controller from the framework and destroys any bindables it created.
+--- This API will attempt to call `DragonEngine:StopController()` with the controller before unloading it, to clean state.
+--- ```lua
+--- local Success,Error = DragonEngine:UnloadController("UIController")
+--- if not Success then
+--- 	print("Failed to unload UIController : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ControllerName string -- The name of the controller to unload
+--- @return bool -- A `bool` describing whether or not the controller was successfully unloaded
+--- @return string -- A `string` containing the error message if the controller fails to be unloaded. Is `nil` if unloading succeeded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:UnloadController(ControllerName)
+function DragonEngineClient:UnloadController(ControllerName)
 
 	----------------
 	-- Assertions --
@@ -271,13 +307,20 @@ function DragonEngine:UnloadController(ControllerName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : InitializeController
--- @Description : Initializes the specified Controller.
--- @Params : string "ControllerName" - The name of the Controller to initialize
--- @Returns : bool "Success" - Whether or not the Controller was successfully initialized.
---            string "Error" - The error message if the initialization failed. Is nil if initialization succeeded.
+--- Calls `:Init()` on the specified controller.
+--- ```lua
+--- local Success,Error = DragonEngine:InitializeController("UIController")
+--- if not Success then
+--- 	print("Failed to initialize uicontroller : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ControllerName string -- The name of the controller to initialize
+--- @return bool -- A `bool` describing whether or not the controller was successfully initialized
+--- @return string -- A `string` containing the error message if the controller fails to be initialized. Is `nil` if initialization succeeded.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:InitializeController(ControllerName)
+function DragonEngineClient:InitializeController(ControllerName)
 
 	----------------
 	-- Assertions --
@@ -301,7 +344,7 @@ function DragonEngine:InitializeController(ControllerName)
 			Controller:Init()
 		end)
 		if not Success then
-			DragonEngine:Log("Failed to initialize Controller '"..ControllerName.."' : "..Error,"Warning")
+			DragonEngineClient:Log("Failed to initialize Controller '"..ControllerName.."' : "..Error,"Warning")
 			return false,Error
 		end
 		Controller.Status = "Stopped"
@@ -315,12 +358,20 @@ function DragonEngine:InitializeController(ControllerName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : StartController
--- @Description : Starts the specified Controller.
--- @Params : bool "Success" - Whether or not the Controller was successfully started.
---           string "Error" - The error message if starting the Controller failed. Is nil if the start succeeded.
+--- Calls `:Start()` on the specified controller.
+--- ```lua
+--- local Success,Error = DragonEngine:StartController("UIController")
+--- if not Success then
+--- 	print("Failed to start uicontroller : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ControllerName string -- The name of the controller to start
+--- @return bool -- A `bool` describing whether or not the controller was successfully started.
+--- @return string -- A `string` containing the error message if the controller fails to successfully start. Is `nil` if start was successful.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:StartController(ControllerName)
+function DragonEngineClient:StartController(ControllerName)
 	----------------
 	-- Assertions --
 	----------------
@@ -345,7 +396,7 @@ function DragonEngine:StartController(ControllerName)
 			coroutine.wrap(Controller.Start)(Controller)
 		end)
 		if not Success then
-			DragonEngine:Log("Failed to start Controller '"..ControllerName.."' : "..Error,"Warning")
+			DragonEngineClient:Log("Failed to start Controller '"..ControllerName.."' : "..Error,"Warning")
 			return false,Error
 		end
 		Controller.Status = "Running"
@@ -358,12 +409,20 @@ function DragonEngine:StartController(ControllerName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : StopController
--- @Description : Stops the specified Controller.
--- @Params : bool "Success" - Whether or not the Controller was successfully stopped.
---           string "Error" - The error message if stopping the Controller failed. Is nil if the start succeeded.
+--- Calls `:Stop()` on the specified controller
+--- ```lua
+--- local Success,Error = DragonEngine:StopController("UIController")
+--- if not Success then
+--- 	print("Failed to stop uicontroller : " .. Error)
+--- end
+--- ```
+---
+--- @private
+--- @param ControllerName string -- The name of the Controller to stop
+--- @return bool -- A `bool` describing whether or not the controller was successfully stopped
+--- @return string -- A `string` containing the error message if the controller fails to stop. Will be `nil` if the stop is successful.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:StopController(ControllerName)
+function DragonEngineClient:StopController(ControllerName)
 	----------------
 	-- Assertions --
 	----------------
@@ -386,7 +445,7 @@ function DragonEngine:StopController(ControllerName)
 			Controller:Stop()
 		end)
 		if not Success then
-			DragonEngine:Log("Failed to stop Controller '"..ControllerName.."' : "..Error,"Warning")
+			DragonEngineClient:Log("Failed to stop Controller '"..ControllerName.."' : "..Error,"Warning")
 			return false,Error
 		end
 		Controller.Status = "Stopped"
@@ -400,12 +459,19 @@ function DragonEngine:StopController(ControllerName)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- @Name : RegisterControllerClientEvent
--- @Description : Registers a client event for the Controller calling. MUST BE CALLED FROM INSIDE A Controller MODULE.
--- @Params : string "Name" - The name to assign to the client event.
--- @Retruns : Instance <BindableEvent> "BindableEvent" - The Controller client event.
+--- Registers a BindableEvent for the calling controller that it can use to fire client-side events.
+--- ```lua
+--- local AvatarJumpedBindable = DragonEngine:RegisterControllerClientEvent("AvatarJumped")
+--- AvatarJumpedBindable:Fire(PlayerCharacter)
+--- ```
+--- :::warning
+--- This API should only be called from a controller! Calling it outside of a controller will cause errors.
+--- :::
+---
+--- @param Name string -- The name to assign to the BindableEvent
+--- @return BindableEvent -- The BindableEvent that was registered with the framework
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function DragonEngine:RegisterControllerClientEvent(Name)
+function DragonEngineClient:RegisterControllerClientEvent(Name)
 
 	----------------
 	-- Assertions --
@@ -470,93 +536,93 @@ if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
 	end)
 	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..(Error or ""))
 end
-DragonEngine.Config = EngineConfigs
+DragonEngineClient.Config = EngineConfigs
 
 if EngineConfigs.Settings.ShowLogoInOutput then
-	DragonEngine:Log(ENGINE_LOGO)
+	DragonEngineClient:Log(ENGINE_LOGO)
 end
 if EngineConfigs.Settings.Debug then
-	DragonEngine:Log("[Dragon Engine Server] Debug enabled. Logging will be verbose.")
+	DragonEngineClient:Log("[Dragon Engine Server] Debug enabled. Logging will be verbose.")
 end
 
 -------------------
 -- Loading Enums --
 -------------------
 for EnumName,EnumVal in pairs(EngineConfigs.Settings.Enums) do
-	DragonEngine:DefineEnum(EnumName,EnumVal)
+	DragonEngineClient:DefineEnum(EnumName,EnumVal)
 end
 
 ---------------------
 -- Loading modules --
 ---------------------
-DragonEngine:Log("")
-DragonEngine:Log("**** Loading modules ****")
-DragonEngine:Log("")
+DragonEngineClient:Log("")
+DragonEngineClient:Log("**** Loading modules ****")
+DragonEngineClient:Log("")
 for _,ModulePaths in pairs(EngineConfigs.ClientPaths.ModulePaths) do
 	for _,ModulePath in pairs(ModulePaths) do
-		DragonEngine:LazyLoadModulesIn(ModulePath)
+		DragonEngineClient:LazyLoadModulesIn(ModulePath)
 	end
 end
-DragonEngine:Log("All modules lazy-loaded!")
+DragonEngineClient:Log("All modules lazy-loaded!")
 
 --------------------------------------------
 -- Connecting to remote service endpoints --
 --------------------------------------------
-DragonEngine:Log("")
-DragonEngine:Log("**** Connecting to service endpoints ****")
-DragonEngine:Log("")
-DragonEngine:DebugLog("Connecting to service endpoints...")
+DragonEngineClient:Log("")
+DragonEngineClient:Log("**** Connecting to service endpoints ****")
+DragonEngineClient:Log("")
+DragonEngineClient:DebugLog("Connecting to service endpoints...")
 for _,ServiceFolder in pairs(Service_Endpoints:GetChildren()) do
 	ConnectToServiceEndpoints(ServiceFolder.Name)
 end
-DragonEngine:Log("All endpoints connected to!")
+DragonEngineClient:Log("All endpoints connected to!")
 
 ----------------------------------------------------
 --  Loading, initializing and running controllers --
 ----------------------------------------------------
-DragonEngine:Log("")
-DragonEngine:Log("**** Loading controllers ****")
-DragonEngine:Log("")
+DragonEngineClient:Log("")
+DragonEngineClient:Log("**** Loading controllers ****")
+DragonEngineClient:Log("")
 for _,ControllerPath in pairs(EngineConfigs.ClientPaths.ControllerPaths) do
-	DragonEngine:LoadControllersIn(ControllerPath)
+	DragonEngineClient:LoadControllersIn(ControllerPath)
 end
-DragonEngine:Log("All controllers loaded!")
+DragonEngineClient:Log("All controllers loaded!")
 
-DragonEngine:Log("")
-DragonEngine:Log("**** Initializing controllers ****")
-DragonEngine:Log("")
-for ControllerName,_ in pairs(DragonEngine.Controllers) do
-	DragonEngine:InitializeController(ControllerName)
+DragonEngineClient:Log("")
+DragonEngineClient:Log("**** Initializing controllers ****")
+DragonEngineClient:Log("")
+for ControllerName,_ in pairs(DragonEngineClient.Controllers) do
+	DragonEngineClient:InitializeController(ControllerName)
 end
-DragonEngine:Log("All controllers initialized!")
+DragonEngineClient:Log("All controllers initialized!")
 
-DragonEngine:Log("")
-DragonEngine:Log("**** Starting controllers ****")
-DragonEngine:Log("")
-for ControllerName,Controller in pairs(DragonEngine.Controllers) do
+DragonEngineClient:Log("")
+DragonEngineClient:Log("**** Starting controllers ****")
+DragonEngineClient:Log("")
+for ControllerName,Controller in pairs(DragonEngineClient.Controllers) do
 	if Controller.Initialized then
-		DragonEngine:StartController(ControllerName)
+		DragonEngineClient:StartController(ControllerName)
 	end
 end
-DragonEngine:Log("All services running!")
+DragonEngineClient:Log("All services running!")
 
 
 ---------------------------------------------
 -- Listening for service loading/unloading --
 ---------------------------------------------
 Service_Loaded:connect(function(ServiceName)
-	DragonEngine:Log("[Dragon Engine Client] New service loaded on the server, connecting to endpoints.")
+	DragonEngineClient:Log("[Dragon Engine Client] New service loaded on the server, connecting to endpoints.")
 	if Service_Endpoints:FindFirstChild(ServiceName) ~= nil then --Service has endpoint APIs.
 		ConnectToServiceEndpoints(ServiceName)
 	end
 end)
 Service_Unloaded:connect(function(ServiceName)
-	DragonEngine:Log("[Dragon Engine Client] Service unloaded on the server, disconnecting from endpoints.")
-	DragonEngine.Services[ServiceName] = nil
+	DragonEngineClient:Log("[Dragon Engine Client] Service unloaded on the server, disconnecting from endpoints.")
+	DragonEngineClient.Services[ServiceName] = nil
 end)
 
 ------------------------------------------
 -- Indicating that the engine is loaded --
 ------------------------------------------
-shared.DragonEngine = DragonEngine
-DragonEngine:Log("Dragon Engine "..DragonEngine.Version.." loaded!")
+shared.DragonEngine = DragonEngineClient
+DragonEngineClient:Log("Dragon Engine "..DragonEngineClient.Version.." loaded!")
