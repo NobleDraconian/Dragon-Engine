@@ -5,8 +5,7 @@ classOrder = [
 ]
 
 [docusaurus]
-url = "https://nobledraconian.dev"
-favicon = "/Assets/Web/Branding/Dragon_Engine_Logo_White.png"
+favicon = "Assets/Web/Branding/Dragon_Engine_Logo_White.png"
 tagline = "Microservice-based game framework for Roblox"
 
 [home]
