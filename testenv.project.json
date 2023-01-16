@@ -55,7 +55,6 @@
 				"FogColor" : [1,1,1],
 				"FogEnd" : 3500,
 				"FogStart" : 130,
-				"LegacyOutlines" : false,
 				"GlobalShadows" : true,
 				"ShadowSoftness" : 0.5
 			},
