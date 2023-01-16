@@ -12,6 +12,7 @@ EngineEngineDebugService.Client.Server=EngineEngineDebugService
 -- Roblox Services --
 ---------------------
 local RunService=game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --------------
 -- REQUIRES --
@@ -69,7 +70,7 @@ function EngineEngineDebugService:Init()
 	-----------------
 	-- Set up Cmdr --
 	-----------------
-	Cmdr=self.Modules.Cmdr
+	Cmdr = require(ReplicatedStorage.Packages.Cmdr)
 	Cmdr:RegisterDefaultCommands()
 	Cmdr:RegisterCommandsIn(script.Commands)
 

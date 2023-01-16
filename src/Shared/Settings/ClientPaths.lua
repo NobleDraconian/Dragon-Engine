@@ -13,8 +13,7 @@ local StarterPlayer = game:GetService("StarterPlayer")
 return {
 	ModulePaths = {
 		Shared = {
-			ReplicatedStorage.DragonEngine.lib.Classes,
-			ReplicatedStorage.DragonEngine.lib.Utils
+			require(ReplicatedStorage.Packages["Roblox-LibModules"]),
 		}
 	},
 
