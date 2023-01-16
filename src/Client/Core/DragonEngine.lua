@@ -490,139 +490,155 @@ function DragonEngineClient:RegisterControllerClientEvent(Name)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- ENGINE INIT
+--- Runs the framework. Controllers will be loaded & ran from the service locations specified in the framework's settings,
+--- and modules will be marked for lazyloading from the locations specified in the framework's settings.
+--- ```lua
+--- DragonEngine:Run()
+--- ```
+---
+--- :::warning
+--- This API should only be called once! Calling it more than once will result in unstable behavior.
+--- :::
+--- :::warning
+--- If the framework is accessed before this API is ran, nothing will have been initialized!
+--- :::
+---
+--- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngineClient:Run()
+	----------------------
+	-- Loading Settings --
+	----------------------
+	local Developer_SettingsFolder = ReplicatedStorage:FindFirstChild("DragonEngine_Configs")
+	if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
+		local Success,Error = pcall(function()
+			if Developer_SettingsFolder:FindFirstChild("EngineSettings") ~= nil then
+				local Developer_EngineConfigs = require(Developer_SettingsFolder.EngineSettings)
 
-----------------------
--- Loading Settings --
-----------------------
-local Developer_SettingsFolder = ReplicatedStorage:FindFirstChild("DragonEngine_Configs")
-if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
-	local Success,Error = pcall(function()
-		if Developer_SettingsFolder:FindFirstChild("EngineSettings") ~= nil then
-			local Developer_EngineConfigs = require(Developer_SettingsFolder.EngineSettings)
+				EngineConfigs.Settings.ShowLogoInOutput = Developer_EngineConfigs.ShowLogoInOutput
+				EngineConfigs.Settings.Debug = Developer_EngineConfigs.Debug
+				
+				for ModuleLocationType,ModuleNames in pairs(Developer_EngineConfigs.IgnoredModules) do
+					if EngineConfigs.Settings.IgnoredModules[ModuleLocationType] == nil then
+						EngineConfigs.Settings.IgnoredModules[ModuleLocationType] = {}
+					end
 
-			EngineConfigs.Settings.ShowLogoInOutput = Developer_EngineConfigs.ShowLogoInOutput
-			EngineConfigs.Settings.Debug = Developer_EngineConfigs.Debug
-			
-			for ModuleLocationType,ModuleNames in pairs(Developer_EngineConfigs.IgnoredModules) do
-				if EngineConfigs.Settings.IgnoredModules[ModuleLocationType] == nil then
-					EngineConfigs.Settings.IgnoredModules[ModuleLocationType] = {}
-				end
-
-				for _,ModuleName in pairs(ModuleNames) do
-					table.insert(EngineConfigs.Settings.IgnoredModules[ModuleLocationType],ModuleName)
+					for _,ModuleName in pairs(ModuleNames) do
+						table.insert(EngineConfigs.Settings.IgnoredModules[ModuleLocationType],ModuleName)
+					end
 				end
 			end
+
+			if Developer_SettingsFolder:FindFirstChild("ClientPaths") ~= nil then
+				local Developer_ClientPaths = require(Developer_SettingsFolder.ClientPaths)
+
+				for ModuleLocationType,ModulePaths in pairs(Developer_ClientPaths.ModulePaths) do
+					if EngineConfigs.ClientPaths.ModulePaths[ModuleLocationType] == nil then
+						EngineConfigs.ClientPaths.ModulePaths[ModuleLocationType] = {}
+					end
+
+					for _,ModulePath in pairs(ModulePaths) do
+						table.insert(EngineConfigs.ClientPaths.ModulePaths[ModuleLocationType],ModulePath)
+					end
+				end
+
+				for _,ControllerPath in pairs(Developer_ClientPaths.ControllerPaths) do
+					table.insert(EngineConfigs.ClientPaths.ControllerPaths,ControllerPath)
+				end
+			end
+		end)
+		assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..(Error or ""))
+	end
+	DragonEngineClient.Config = EngineConfigs
+
+	if EngineConfigs.Settings.ShowLogoInOutput then
+		DragonEngineClient:Log(ENGINE_LOGO)
+	end
+	if EngineConfigs.Settings.Debug then
+		DragonEngineClient:Log("[Dragon Engine Server] Debug enabled. Logging will be verbose.")
+	end
+
+	-------------------
+	-- Loading Enums --
+	-------------------
+	for EnumName,EnumVal in pairs(EngineConfigs.Settings.Enums) do
+		DragonEngineClient:DefineEnum(EnumName,EnumVal)
+	end
+
+	---------------------
+	-- Loading modules --
+	---------------------
+	DragonEngineClient:Log("")
+	DragonEngineClient:Log("**** Loading modules ****")
+	DragonEngineClient:Log("")
+	for _,ModulePaths in pairs(EngineConfigs.ClientPaths.ModulePaths) do
+		for _,ModulePath in pairs(ModulePaths) do
+			DragonEngineClient:LazyLoadModulesIn(ModulePath)
 		end
+	end
+	DragonEngineClient:Log("All modules lazy-loaded!")
 
-		if Developer_SettingsFolder:FindFirstChild("ClientPaths") ~= nil then
-			local Developer_ClientPaths = require(Developer_SettingsFolder.ClientPaths)
+	--------------------------------------------
+	-- Connecting to remote service endpoints --
+	--------------------------------------------
+	DragonEngineClient:Log("")
+	DragonEngineClient:Log("**** Connecting to service endpoints ****")
+	DragonEngineClient:Log("")
+	DragonEngineClient:DebugLog("Connecting to service endpoints...")
+	for _,ServiceFolder in pairs(Service_Endpoints:GetChildren()) do
+		ConnectToServiceEndpoints(ServiceFolder.Name)
+	end
+	DragonEngineClient:Log("All endpoints connected to!")
 
-			for ModuleLocationType,ModulePaths in pairs(Developer_ClientPaths.ModulePaths) do
-				if EngineConfigs.ClientPaths.ModulePaths[ModuleLocationType] == nil then
-					EngineConfigs.ClientPaths.ModulePaths[ModuleLocationType] = {}
-				end
+	----------------------------------------------------
+	--  Loading, initializing and running controllers --
+	----------------------------------------------------
+	DragonEngineClient:Log("")
+	DragonEngineClient:Log("**** Loading controllers ****")
+	DragonEngineClient:Log("")
+	for _,ControllerPath in pairs(EngineConfigs.ClientPaths.ControllerPaths) do
+		DragonEngineClient:LoadControllersIn(ControllerPath)
+	end
+	DragonEngineClient:Log("All controllers loaded!")
 
-				for _,ModulePath in pairs(ModulePaths) do
-					table.insert(EngineConfigs.ClientPaths.ModulePaths[ModuleLocationType],ModulePath)
-				end
-			end
+	DragonEngineClient:Log("")
+	DragonEngineClient:Log("**** Initializing controllers ****")
+	DragonEngineClient:Log("")
+	for ControllerName,_ in pairs(DragonEngineClient.Controllers) do
+		DragonEngineClient:InitializeController(ControllerName)
+	end
+	DragonEngineClient:Log("All controllers initialized!")
 
-			for _,ControllerPath in pairs(Developer_ClientPaths.ControllerPaths) do
-				table.insert(EngineConfigs.ClientPaths.ControllerPaths,ControllerPath)
-			end
+	DragonEngineClient:Log("")
+	DragonEngineClient:Log("**** Starting controllers ****")
+	DragonEngineClient:Log("")
+	for ControllerName,Controller in pairs(DragonEngineClient.Controllers) do
+		if Controller.Initialized then
+			DragonEngineClient:StartController(ControllerName)
+		end
+	end
+	DragonEngineClient:Log("All services running!")
+
+
+	---------------------------------------------
+	-- Listening for service loading/unloading --
+	---------------------------------------------
+	Service_Loaded:connect(function(ServiceName)
+		DragonEngineClient:Log("[Dragon Engine Client] New service loaded on the server, connecting to endpoints.")
+		if Service_Endpoints:FindFirstChild(ServiceName) ~= nil then --Service has endpoint APIs.
+			ConnectToServiceEndpoints(ServiceName)
 		end
 	end)
-	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..(Error or ""))
-end
-DragonEngineClient.Config = EngineConfigs
+	Service_Unloaded:connect(function(ServiceName)
+		DragonEngineClient:Log("[Dragon Engine Client] Service unloaded on the server, disconnecting from endpoints.")
+		DragonEngineClient.Services[ServiceName] = nil
+	end)
 
-if EngineConfigs.Settings.ShowLogoInOutput then
-	DragonEngineClient:Log(ENGINE_LOGO)
-end
-if EngineConfigs.Settings.Debug then
-	DragonEngineClient:Log("[Dragon Engine Server] Debug enabled. Logging will be verbose.")
-end
-
--------------------
--- Loading Enums --
--------------------
-for EnumName,EnumVal in pairs(EngineConfigs.Settings.Enums) do
-	DragonEngineClient:DefineEnum(EnumName,EnumVal)
+	------------------------------------------
+	-- Indicating that the engine is loaded --
+	------------------------------------------
+	shared.DragonEngine = DragonEngineClient
+	DragonEngineClient:Log("Dragon Engine "..DragonEngineClient.Version.." loaded!")
 end
 
----------------------
--- Loading modules --
----------------------
-DragonEngineClient:Log("")
-DragonEngineClient:Log("**** Loading modules ****")
-DragonEngineClient:Log("")
-for _,ModulePaths in pairs(EngineConfigs.ClientPaths.ModulePaths) do
-	for _,ModulePath in pairs(ModulePaths) do
-		DragonEngineClient:LazyLoadModulesIn(ModulePath)
-	end
-end
-DragonEngineClient:Log("All modules lazy-loaded!")
-
---------------------------------------------
--- Connecting to remote service endpoints --
---------------------------------------------
-DragonEngineClient:Log("")
-DragonEngineClient:Log("**** Connecting to service endpoints ****")
-DragonEngineClient:Log("")
-DragonEngineClient:DebugLog("Connecting to service endpoints...")
-for _,ServiceFolder in pairs(Service_Endpoints:GetChildren()) do
-	ConnectToServiceEndpoints(ServiceFolder.Name)
-end
-DragonEngineClient:Log("All endpoints connected to!")
-
-----------------------------------------------------
---  Loading, initializing and running controllers --
-----------------------------------------------------
-DragonEngineClient:Log("")
-DragonEngineClient:Log("**** Loading controllers ****")
-DragonEngineClient:Log("")
-for _,ControllerPath in pairs(EngineConfigs.ClientPaths.ControllerPaths) do
-	DragonEngineClient:LoadControllersIn(ControllerPath)
-end
-DragonEngineClient:Log("All controllers loaded!")
-
-DragonEngineClient:Log("")
-DragonEngineClient:Log("**** Initializing controllers ****")
-DragonEngineClient:Log("")
-for ControllerName,_ in pairs(DragonEngineClient.Controllers) do
-	DragonEngineClient:InitializeController(ControllerName)
-end
-DragonEngineClient:Log("All controllers initialized!")
-
-DragonEngineClient:Log("")
-DragonEngineClient:Log("**** Starting controllers ****")
-DragonEngineClient:Log("")
-for ControllerName,Controller in pairs(DragonEngineClient.Controllers) do
-	if Controller.Initialized then
-		DragonEngineClient:StartController(ControllerName)
-	end
-end
-DragonEngineClient:Log("All services running!")
-
-
----------------------------------------------
--- Listening for service loading/unloading --
----------------------------------------------
-Service_Loaded:connect(function(ServiceName)
-	DragonEngineClient:Log("[Dragon Engine Client] New service loaded on the server, connecting to endpoints.")
-	if Service_Endpoints:FindFirstChild(ServiceName) ~= nil then --Service has endpoint APIs.
-		ConnectToServiceEndpoints(ServiceName)
-	end
-end)
-Service_Unloaded:connect(function(ServiceName)
-	DragonEngineClient:Log("[Dragon Engine Client] Service unloaded on the server, disconnecting from endpoints.")
-	DragonEngineClient.Services[ServiceName] = nil
-end)
-
-------------------------------------------
--- Indicating that the engine is loaded --
-------------------------------------------
-shared.DragonEngine = DragonEngineClient
-DragonEngineClient:Log("Dragon Engine "..DragonEngineClient.Version.." loaded!")
+return DragonEngineClient
