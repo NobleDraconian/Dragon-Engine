@@ -18,6 +18,6 @@ return {
 	},
 
 	ControllerPaths = {
-		StarterPlayer.StarterPlayerScripts.DragonEngine.Controllers
+		script.Parent.Parent.Parent.Client.Controllers
 	}
 }
