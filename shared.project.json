@@ -1,8 +1,0 @@
-{
-	"name" : "DragonEngine",
-
-	"tree" : {
-		"$className": "Folder",
-		"$path" : "src/Shared"
-	}
-}

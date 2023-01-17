@@ -6,28 +6,11 @@
 		"ReplicatedStorage" : {
 			"$className":"ReplicatedStorage",
 
-			"DragonEngine" : {
-				"$path" : "shared.project.json"
-			},
-			"Packages" : {"$path" : "Packages"}
-		},
-
-		"ServerScriptService" : {
-			"$className":"ServerScriptService",
-
-			"DragonEngine" : {
-				"$path" : "server.project.json"
-			}
-		},
-
-		"StarterPlayer" : {
-			"$className" : "StarterPlayer",
-
-			"StarterPlayerScripts" : {
-				"$className":"StarterPlayerScripts",
+			"Packages" : {
+				"$path" : "Packages",
 
 				"DragonEngine" : {
-					"$path" : "client.project.json"
+					"$path" : "default.project.json"
 				}
 			}
 		},
