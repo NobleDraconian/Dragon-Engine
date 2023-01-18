@@ -281,7 +281,8 @@ end
 --- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:DefineEnum(EnumName,EnumTable)
-
+	self:Log("[Dragon Engine Core] DefineEnum() has been deprecated and should not be used!","Warning")
+	
 	local function GetEnumItems(CustomEnum)
 		local EnumItems = {}
 
