@@ -543,6 +543,25 @@ function DragonEngineClient:Run(FrameworkSettings)
 		CurrentFrameworkSettings.Debug = FrameworkSettings.Debug
 	end
 
+	if CurrentFrameworkSettings.ShowLogoInOutput then
+		self:Log(ENGINE_LOGO)
+	end
+
+	self:DebugLog("[Dragon Engine Client] Debug enabled. Logging will be verbose.","Warning")
+
+	---------------------
+	-- Loading modules --
+	---------------------
+	self:Log("")
+	self:Log("**** Loading modules ****")
+	self:Log("")
+	for _,ModulePaths in pairs(CurrentFrameworkSettings.ClientPaths.ModulePaths) do
+		for _,ModulePath in pairs(ModulePaths) do
+			self:LazyLoadModulesIn(ModulePath)
+		end
+	end
+	self:Log("All modules lazy-loaded!")
+
 	--------------------------------------------
 	-- Connecting to remote service endpoints --
 	--------------------------------------------
