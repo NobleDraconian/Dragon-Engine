@@ -42,6 +42,7 @@
 --- 	}
 --- }
 --- ```
+--- For more information, see [server paths](../docs/Configuration#server-paths).
 
 ---------------------
 -- Roblox Services --

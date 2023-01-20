@@ -34,6 +34,7 @@
 --- 	}
 --- }
 --- ```
+--- For more information, see [client paths](../docs/Configuration#client-paths).
 
 --------------
 -- REQUIRES --
