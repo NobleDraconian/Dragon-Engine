@@ -1,3 +1,12 @@
+## v2.0.0
+- The framework's structure has been changed to be compatible with [wally](https://wally.run/), a package manager for Roblox. This means that the framework is now a wally package! The package can be viewed [here](https://wally.run/package/nobledraconian/dragon-engine).
+- The `Enum` APIs have been deprecated and should not be used.
+- The framework's execution model has been changed slightly. In order to run the framework, explicit execution is now required via the `DragonEngine:Run()` API.
+- The framework now has a documentation site! It can be viewed [here](https://nobledraconian.dev/Dragon-Engine).
+
+## v1.0.0
+** This was a test release and should not be used **
+
 ## v0.1.0-rc.7
 - Expanded logging APIs have been added (#70)
 
