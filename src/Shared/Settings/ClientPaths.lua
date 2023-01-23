@@ -7,12 +7,11 @@
 ---------------------
 -- Roblox Services --
 ---------------------
-local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
 return {
 	ModulePaths = {
 		Shared = {
-			require(ReplicatedStorage.Packages["Roblox-LibModules"]),
+			require(script.Parent.Parent.Parent.Parent["Roblox-LibModules"]),
 		}
 	},
 
