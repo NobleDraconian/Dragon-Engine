@@ -12,7 +12,6 @@ EngineEngineDebugService.Client.Server=EngineEngineDebugService
 -- Roblox Services --
 ---------------------
 local RunService=game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --------------
 -- REQUIRES --

@@ -7,7 +7,6 @@
 ---------------------
 -- Roblox Services --
 ---------------------
-local ReplicatedStorage=game:GetService("ReplicatedStorage")
 
 return {
 	ModulePaths = {
