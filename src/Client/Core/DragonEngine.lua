@@ -118,7 +118,7 @@ local function ConnectToServiceEndpoints(ServiceName)
 		if RemoteFunction:IsA("RemoteFunction") then
 			DragonEngineClient:DebugLog("Connecting to remote function '"..Service_EndpointFolder.Name.."."..RemoteFunction.Name.."'...")
 
-			Service[RemoteFunction.Name] = function(self,...) --We seperate 'self' to ommit it from the server call.
+			Service[RemoteFunction.Name] = function(_,...) --We seperate 'self' to ommit it from the server call.
 				return RemoteFunction:InvokeServer(...)
 			end
 		elseif RemoteFunction:IsA("RemoteEvent") then
