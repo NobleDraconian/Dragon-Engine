@@ -6,27 +6,11 @@
 		"ReplicatedStorage" : {
 			"$className":"ReplicatedStorage",
 
-			"FrameworkShared" : {
-				"$path" : "shared.project.json"
-			}
-		},
+			"Packages" : {
+				"$path" : "Packages",
 
-		"ServerScriptService" : {
-			"$className":"ServerScriptService",
-
-			"FrameworkServer" : {
-				"$path" : "server.project.json"
-			}
-		},
-
-		"StarterPlayer" : {
-			"$className" : "StarterPlayer",
-
-			"StarterPlayerScripts" : {
-				"$className":"StarterPlayerScripts",
-
-				"FrameworkClient" : {
-					"$path" : "client.project.json"
+				"DragonEngine" : {
+					"$path" : "default.project.json"
 				}
 			}
 		},
@@ -54,7 +38,6 @@
 				"FogColor" : [1,1,1],
 				"FogEnd" : 3500,
 				"FogStart" : 130,
-				"LegacyOutlines" : false,
 				"GlobalShadows" : true,
 				"ShadowSoftness" : 0.5
 			},

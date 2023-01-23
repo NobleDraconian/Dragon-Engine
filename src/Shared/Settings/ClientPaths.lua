@@ -8,17 +8,15 @@
 -- Roblox Services --
 ---------------------
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 
 return {
 	ModulePaths = {
 		Shared = {
-			ReplicatedStorage.DragonEngine.lib.Classes,
-			ReplicatedStorage.DragonEngine.lib.Utils
+			require(ReplicatedStorage.Packages["Roblox-LibModules"]),
 		}
 	},
 
 	ControllerPaths = {
-		StarterPlayer.StarterPlayerScripts.DragonEngine.Controllers
+		script.Parent.Parent.Parent.Client.Controllers
 	}
 }

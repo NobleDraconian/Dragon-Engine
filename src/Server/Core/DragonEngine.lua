@@ -17,23 +17,47 @@
 --- @within DragonEngineServer
 --- @field Server Service -- A reference to the service's server-facing APIs. Will be `nil` on the client.
 --- @field ... function -- The service's various defined client-facing APIs.
+---
 --- The client-facing part of a microservice.
+
+--- @interface ServerPaths
+--- @within DragonEngineServer
+--- @field ModulePaths table -- The folders that the framework will lazyload modules from
+--- @field ServicePaths table -- The folders that the framework will load services from
+---
+--- The folders that the framework will look in when attempting to load services & modules.
+--- Here's an example of a valid ServerPaths configuration:
+--- ```lua
+--- {
+--- 	ModulePaths = {
+--- 		Server = {
+--- 			ServerScriptService.Modules,
+--- 		},
+--- 		Shared = {
+--- 			ReplicatedStorage.Modules,
+--- 		}
+--- 	},
+--- 	ServicePaths = {
+--- 		ServerScriptService.Services
+--- 	}
+--- }
+--- ```
+--- For more information, see [server paths](../docs/Configuration#server-paths).
 
 ---------------------
 -- Roblox Services --
 ---------------------
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
+
 
 --------------
 -- REQUIRES --
 --------------
-local DragonEngineServer = require(ReplicatedStorage.DragonEngine.EngineCore)
-local ENGINE_LOGO = require(ReplicatedStorage.DragonEngine.Logo)
-local Boilerplate = require(ReplicatedStorage.DragonEngine.Boilerplate)
-local EngineConfigs = {
-	Settings = require(ReplicatedStorage.DragonEngine.Settings.EngineSettings),
-	ServerPaths = require(ReplicatedStorage.DragonEngine.Settings.ServerPaths),
+local DragonEngineServer = require(script.Parent.Parent.Parent.Shared.EngineCore)
+local ENGINE_LOGO = require(script.Parent.Parent.Parent.Shared.Logo)
+local Boilerplate = require(script.Parent.Parent.Parent.Shared.Boilerplate)
+local DefaultFrameworkSettings = {
+	CoreSettings = require(script.Parent.Parent.Parent.Shared.Settings.EngineSettings),
+	ServerPaths = require(script.Parent.Parent.Parent.Shared.Settings.ServerPaths)
 }
 
 -------------
@@ -41,17 +65,23 @@ local EngineConfigs = {
 -------------
 local Framework_NetworkFolder = Instance.new('Folder')
       Framework_NetworkFolder.Name = "Network"
-      Framework_NetworkFolder.Parent = ReplicatedStorage.DragonEngine
+      Framework_NetworkFolder.Parent = script.Parent.Parent.Parent
 local ServiceEndpoints_Folder = Instance.new('Folder')
 	  ServiceEndpoints_Folder.Name = "Service_Endpoints"
 	  ServiceEndpoints_Folder.Parent = Framework_NetworkFolder
 local ServiceEvents_Folder = Instance.new('Folder')
       ServiceEvents_Folder.Name = "Service_Events"
-      ServiceEvents_Folder.Parent = ServerScriptService.DragonEngine
+      ServiceEvents_Folder.Parent = script.Parent.Parent
 local Service_ClientEndpoints = Instance.new('Folder')
 	  Service_ClientEndpoints.Name = "Service_ClientEndpoints"
-	  Service_ClientEndpoints.Parent = ReplicatedStorage.DragonEngine.Network
+	  Service_ClientEndpoints.Parent = Framework_NetworkFolder
+local CurrentFrameworkSettings = {
+	ShowLogoInOutput = DefaultFrameworkSettings.CoreSettings.ShowLogoInOutput,
+	Debug = DefaultFrameworkSettings.CoreSettings.ShowLogoInOutput,
+	ServerPaths = DefaultFrameworkSettings.ServerPaths
+}
 DragonEngineServer.Services = {} --Contains all services, both running and stopped
+DragonEngineServer.Config = CurrentFrameworkSettings
 
 ------------
 -- Events --
@@ -66,19 +96,6 @@ local ServiceUnloaded_ClientEvent = Instance.new('RemoteEvent')
 	  ServiceUnloaded_ClientEvent.Parent = Framework_NetworkFolder
 DragonEngineServer.ServiceLoaded = Service_Loaded_ServerEvent.Event
 DragonEngineServer.ServiceUnloaded = Service_Unloaded_ServerEvent.Event
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Helper functions
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local function IsModuleIgnored(Module)
-	for _,ModuleName in pairs(EngineConfigs.Settings.IgnoredModules) do
-		if ModuleName == Module.Name then
-			return true
-		end
-	end
-
-	return false
-end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- APIs
@@ -213,9 +230,7 @@ end
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngineServer:LoadServicesIn(Container)
 	for _,ServiceModule in pairs(Boilerplate.RecurseFind(Container,"ModuleScript")) do
-		if not IsModuleIgnored(ServiceModule) then
-			DragonEngineServer:LoadService(ServiceModule)
-		end
+		DragonEngineServer:LoadService(ServiceModule)
 	end
 end
 
@@ -534,117 +549,104 @@ function DragonEngineServer:RegisterServiceServerEvent(Name)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- ENGINE INIT
+--- Runs the framework. Services will be loaded & ran from the service locations specified in the framework's settings,
+--- and modules will be marked for lazyloading from the locations specified in the framework's settings.
+--- ```lua
+--- DragonEngine:Run()
+--- ```
+---
+--- :::warning
+--- This API should only be called once! Calling it more than once will result in unstable behavior.
+--- :::
+--- :::warning
+--- If the framework is accessed before this API is ran, nothing will have been initialized!
+--- :::
+---
+--- @param FrameworkSettings FrameworkSettings -- The settings to configure the framework's behavior
+--- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function DragonEngineServer:Run(FrameworkSettings)
 
-----------------------
--- Loading Settings --
-----------------------
-local Developer_SettingsFolder = ReplicatedStorage:FindFirstChild("DragonEngine_Configs")
-if Developer_SettingsFolder ~= nil then -- Load developer-specified settings
-	local Success,Error = pcall(function()
-		if Developer_SettingsFolder:FindFirstChild("EngineSettings") ~= nil then
-			local Developer_EngineConfigs = require(Developer_SettingsFolder.EngineSettings)
+	----------------------
+	-- Loading settings --
+	----------------------
+	if FrameworkSettings ~= nil then
+		for ModuleLocationType,ModulePaths in pairs(FrameworkSettings.ServerPaths.ModulePaths) do
+			if CurrentFrameworkSettings.ServerPaths.ModulePaths[ModuleLocationType] == nil then
+				CurrentFrameworkSettings.ServerPaths.ModulePaths[ModuleLocationType] = {}
+			end
 
-			EngineConfigs.Settings.ShowLogoInOutput = Developer_EngineConfigs.ShowLogoInOutput
-			EngineConfigs.Settings.Debug = Developer_EngineConfigs.Debug
-			
-			for ModuleLocationType,ModuleNames in pairs(Developer_EngineConfigs.IgnoredModules) do
-				if EngineConfigs.Settings.IgnoredModules[ModuleLocationType] == nil then
-					EngineConfigs.Settings.IgnoredModules[ModuleLocationType] = {}
-				end
-
-				for _,ModuleName in pairs(ModuleNames) do
-					table.insert(EngineConfigs.Settings.IgnoredModules[ModuleLocationType],ModuleName)
-				end
+			for _,ModulePath in pairs(ModulePaths) do
+				table.insert(CurrentFrameworkSettings.ServerPaths.ModulePaths[ModuleLocationType],ModulePath)
 			end
 		end
 
-		if Developer_SettingsFolder:FindFirstChild("ServerPaths") ~= nil then
-			local Developer_ServerPaths = require(Developer_SettingsFolder.ServerPaths)
-
-			for ModuleLocationType,ModulePaths in pairs(Developer_ServerPaths.ModulePaths) do
-				if EngineConfigs.ServerPaths.ModulePaths[ModuleLocationType] == nil then
-					EngineConfigs.ServerPaths.ModulePaths[ModuleLocationType] = {}
-				end
-
-				for _,ModulePath in pairs(ModulePaths) do
-					table.insert(EngineConfigs.ServerPaths.ModulePaths[ModuleLocationType],ModulePath)
-				end
-			end
-
-			for _,ServicePath in pairs(Developer_ServerPaths.ServicePaths) do
-				table.insert(EngineConfigs.ServerPaths.ServicePaths,ServicePath)
-			end
+		for _,ServicePath in pairs(FrameworkSettings.ServerPaths.ServicePaths) do
+			table.insert(CurrentFrameworkSettings.ServerPaths.ServicePaths,ServicePath)
 		end
-	end)
-	assert(Success == true,"[Dragon Engine Server] An error occured while loading developer-specified settings : "..(Error or ""))
-end
-DragonEngineServer.Config = EngineConfigs
 
-if EngineConfigs.Settings.ShowLogoInOutput then
-	DragonEngineServer:Log(ENGINE_LOGO)
-end
-if EngineConfigs.Settings.Debug then
-	DragonEngineServer:Log("[Dragon Engine Server] Debug enabled. Logging will be verbose.","Warning")
-end
-
--------------------
--- Loading Enums --
--------------------
-for EnumName,EnumVal in pairs(EngineConfigs.Settings.Enums) do
-	DragonEngineServer:DefineEnum(EnumName,EnumVal)
-end
-
----------------------
--- Loading modules --
----------------------
-DragonEngineServer:Log("")
-DragonEngineServer:Log("**** Loading modules ****")
-DragonEngineServer:Log("")
-for _,ModulePaths in pairs(EngineConfigs.ServerPaths.ModulePaths) do
-	for _,ModulePath in pairs(ModulePaths) do
-		DragonEngineServer:LazyLoadModulesIn(ModulePath)
+		CurrentFrameworkSettings.ShowLogoInOutput = FrameworkSettings.ShowLogoInOutput
+		CurrentFrameworkSettings.Debug = FrameworkSettings.Debug
 	end
-end
-DragonEngineServer:Log("All modules lazy-loaded!")
 
--------------------------------------------------
---  Loading, initializing and running services --
--------------------------------------------------
-DragonEngineServer:Log("")
-DragonEngineServer:Log("**** Loading services ****")
-DragonEngineServer:Log("")
-for _,ServicePath in pairs(EngineConfigs.ServerPaths.ServicePaths) do
-	DragonEngineServer:LoadServicesIn(ServicePath)
-end
-DragonEngineServer:Log("All services loaded!")
-
-DragonEngineServer:Log("")
-DragonEngineServer:Log("**** Initializing services ****")
-DragonEngineServer:Log("")
-for ServiceName,_ in pairs(DragonEngineServer.Services) do
-	DragonEngineServer:InitializeService(ServiceName)
-end
-DragonEngineServer:Log("All services initialized!")
-
-DragonEngineServer:Log("")
-DragonEngineServer:Log("**** Starting services ****")
-DragonEngineServer:Log("")
-for ServiceName,Service in pairs(DragonEngineServer.Services) do
-	if Service.Initialized then
-		DragonEngineServer:StartService(ServiceName)
+	if CurrentFrameworkSettings.ShowLogoInOutput then
+		self:Log(ENGINE_LOGO)
 	end
+
+	self:DebugLog("[Dragon Engine Server] Debug enabled. Logging will be verbose.","Warning")
+
+	---------------------
+	-- Loading modules --
+	---------------------
+	self:Log("")
+	self:Log("**** Loading modules ****")
+	self:Log("")
+	for _,ModulePaths in pairs(CurrentFrameworkSettings.ServerPaths.ModulePaths) do
+		for _,ModulePath in pairs(ModulePaths) do
+			self:LazyLoadModulesIn(ModulePath)
+		end
+	end
+	self:Log("All modules lazy-loaded!")
+
+	-------------------------------------------------
+	--  Loading, initializing and running services --
+	-------------------------------------------------
+	self:Log("")
+	self:Log("**** Loading services ****")
+	self:Log("")
+	for _,ServicePath in pairs(CurrentFrameworkSettings.ServerPaths.ServicePaths) do
+		self:LoadServicesIn(ServicePath)
+	end
+	self:Log("All services loaded!")
+
+	self:Log("")
+	self:Log("**** Initializing services ****")
+	self:Log("")
+	for ServiceName,_ in pairs(DragonEngineServer.Services) do
+		self:InitializeService(ServiceName)
+	end
+	self:Log("All services initialized!")
+
+	self:Log("")
+	self:Log("**** Starting services ****")
+	self:Log("")
+	for ServiceName,Service in pairs(DragonEngineServer.Services) do
+		if Service.Initialized then
+			DragonEngineServer:StartService(ServiceName)
+		end
+	end
+	self:Log("All services running!")
+
+	------------------------------------------
+	-- Indicating that the engine is loaded --
+	------------------------------------------
+	local Engine_Loaded = Instance.new('BoolValue')
+	Engine_Loaded.Name = "_Loaded"
+	Engine_Loaded.Value = true
+	Engine_Loaded.Parent = script.Parent.Parent.Parent
+
+	shared.DragonEngine = DragonEngineServer
+	self:Log("Dragon Engine "..DragonEngineServer.Version.." loaded!")
 end
-DragonEngineServer:Log("All services running!")
 
-------------------------------------------
--- Indicating that the engine is loaded --
-------------------------------------------
-local Engine_Loaded = Instance.new('BoolValue')
-      Engine_Loaded.Name = "_Loaded"
-      Engine_Loaded.Value = true
-      Engine_Loaded.Parent = ReplicatedStorage.DragonEngine
-
-shared.DragonEngine = DragonEngineServer
-DragonEngineServer:Log("Dragon Engine "..DragonEngineServer.Version.." loaded!")
+return DragonEngineServer

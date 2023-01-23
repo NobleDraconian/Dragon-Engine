@@ -9,24 +9,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2.3.0
-      with:
-        submodules: recursive
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
 
     - name: Setup foreman
-      uses: rojo-rbx/setup-foreman@v1
+      uses: rojo-rbx/setup-foreman@62bc697705339a6049f74c9d0ff6d39cffc993e5
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     
+    - name: Install dependencies
+      run: |
+        wally install
+
     - name: Build framework components
       run: |
-        rojo build server.project.json --output Framework_Server.rbxmx
-        rojo build client.project.json --output Framework_Client.rbxmx
-        rojo build shared.project.json --output Framework_Core.rbxmx
+        rojo build standalone.project.json --output Temp/DragonEngine.rbxm
 
     - name: Create release
       id: create_release
-      uses: actions/create-release@v1.1.0
+      uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -34,32 +34,12 @@ jobs:
         release_name: ${{ github.ref }}
         draft: true
     
-    - name: Upload framework server
-      uses: actions/upload-release-asset@v1.0.2
+    - name: Upload framework
+      uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Framework_Server.rbxmx
-        asset_name: Framework_Server.rbxmx
-        asset_content_type: application/xml
-    
-    - name: Upload framework client
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Framework_Client.rbxmx
-        asset_name: Framework_Client.rbxmx
-        asset_content_type: application/xml
-    
-    - name: Upload framework core
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Framework_Core.rbxmx
-        asset_name: Framework_Core.rbxmx
-        asset_content_type: application/xml
+        asset_path: Temp/DragonEngine.rbxm
+        asset_name: DragonEngine_${{ github.ref_name }}.rbxm
+        asset_content_type: application/octet-stream

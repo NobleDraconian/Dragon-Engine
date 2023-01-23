@@ -17,18 +17,5 @@
 
 return{
 	ShowLogoInOutput = false,
-	Debug = false,
-
-	IgnoredModules = {"ExampleService","ExampleController"},
-
-	["Enums"]={
-		["ServiceResponse"]={
-			["BadRequest"]="ERR_BAD_REQUEST",
-			["ServerError"]="ERR_INTERNAL_SERVER_ERROR",
-			["RequestGranted"]="REQUEST_GRANTED",
-			["RequestDenied"]="REQUEST_DENIED",
-			["OperationSuccess"]="OPERATION_SUCCESS",
-			["OperationFailed"]="OPERATION_FAILED",
-		}
-	}
+	Debug = false
 }

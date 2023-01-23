@@ -16,15 +16,19 @@
 ---
 --- A table containing the metadata of a single log.
 
----------------------
--- Roblox Services --
----------------------
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+--- @interface FrameworkSettings
+--- @within DragonEngine
+--- @field ShowLogoInOutput bool -- Determines whether or not the dragon engine logo is shown in the output when the framework runs.
+--- @field Debug bool -- Determines whether or not any debug logs logged via DragonEngine:DebugLog() will be displayed.
+--- @field ServerPaths ServerPaths
+--- @field ClientPaths ClientPaths
+---
+--- The general settings of the framework. For more information, see [framework configuration](../docs/Configuration).
 
 --------------
 -- REQUIRES --
 --------------
-local Boilerplate = require(ReplicatedStorage.DragonEngine.Boilerplate)
+local Boilerplate = require(script.Parent.Boilerplate)
 
 -------------
 -- DEFINES --
@@ -44,16 +48,6 @@ local MessageLogged; -- Fired when a message is logged via Log() or DebugLog()
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Helper functions
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local function IsModuleIgnored(Module)
-	for _,ModuleName in pairs(DragonEngine.Config.Settings.IgnoredModules) do
-		if ModuleName == Module.Name then
-			return true
-		end
-	end
-
-	return false
-end
-
 local function RegisterEvent(EventName)
 	local BindableEvent = Instance.new('BindableEvent')
 	BindableEvent.Name = EventName
@@ -138,7 +132,7 @@ end
 --- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:DebugLog(LogMessage,LogMessageType)
-	if DragonEngine.Config.Settings.Debug then
+	if DragonEngine.Config.Debug then
 		LogMessageType = LogMessageType or "Normal"
 
 		if LogMessage == nil then
@@ -287,7 +281,8 @@ end
 --- @return nil
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function DragonEngine:DefineEnum(EnumName,EnumTable)
-
+	self:Log("[Dragon Engine Core] DefineEnum() has been deprecated and should not be used!","Warning")
+	
 	local function GetEnumItems(CustomEnum)
 		local EnumItems = {}
 
@@ -320,16 +315,14 @@ setmetatable(DragonEngine.Modules,{
 		for _,ModuleLocation in pairs(ModuleLocations) do
 			for _,ModuleScript in pairs(Boilerplate.RecurseFind(ModuleLocation,"ModuleScript")) do
 				if ModuleScript.Name == Key then
-					if not IsModuleIgnored(ModuleScript.Name) then
-						DragonEngine:DebugLog("Lazy-loading module '"..ModuleScript.Name.."'...")
-						local LoadSuccess = DragonEngine:LoadModule(ModuleScript)
+					DragonEngine:DebugLog("Lazy-loading module '"..ModuleScript.Name.."'...")
+					local LoadSuccess = DragonEngine:LoadModule(ModuleScript)
 
-						if LoadSuccess then
-							return DragonEngine:GetModule(ModuleScript.Name)
-						else
-							DragonEngine:DebugLog("Failed to lazy-load module '"..ModuleScript.Name.."'","Warning")
-							return nil
-						end
+					if LoadSuccess then
+						return DragonEngine:GetModule(ModuleScript.Name)
+					else
+						DragonEngine:DebugLog("Failed to lazy-load module '"..ModuleScript.Name.."'","Warning")
+						return nil
 					end
 				end
 			end

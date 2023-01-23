@@ -2,3 +2,6 @@
 *.rbxl
 *.lock
 build/
+Packages/
+Temp/*
+!Temp/.gitkeep
