@@ -23,7 +23,7 @@
 --- @field ServerPaths ServerPaths
 --- @field ClientPaths ClientPaths
 ---
---- The general settings of the framework
+--- The general settings of the framework. For more information, see [framework configuration](../docs/Configuration).
 
 --------------
 -- REQUIRES --
