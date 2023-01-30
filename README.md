@@ -13,3 +13,14 @@ This framework was originally inspired by @Sleitnick's [Aero Game Framework](htt
 
 # Installation instructions
 
+## With wally
+
+Dragon Engine can be installed with wally! Add this to your `wally.toml` file:
+```toml
+[dependencies]
+DragonEngine = "nobledraconian/dragon-engine@2.0.0
+```
+
+## Manual installation
+
+Download the `rbxm` file from [the latest release](https://github.com/NobleDraconian/Dragon-Engine/releases/latest). Insert the `rbxm` into `ReplicatedStorage`.
