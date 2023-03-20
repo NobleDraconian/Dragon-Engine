@@ -15,7 +15,7 @@ This framework was originally inspired by @Sleitnick's [Aero Game Framework](htt
 
 ## With wally
 
-Dragon Engine can be installed with wally! Add this to your `wally.toml` file:
+Dragon Engine can be installed with [wally](https://wally.run/)! Add this to your `wally.toml` file:
 ```toml
 [dependencies]
 DragonEngine = "nobledraconian/dragon-engine@2.0.0
