@@ -3,13 +3,10 @@ on:
   push:
     branches:
     - master
-    paths:
-      - 'src/**'
   pull_request:
     branches:
       - master
-    paths:
-      - 'src/**'
+
 jobs:
   selene-lint:
     name: Lint src/
@@ -17,11 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
       
-      - name: Setup foreman
-        uses: rojo-rbx/setup-foreman@6d3c8043db88319f8482262680b37f73595a8686
+      - name: Setup aftman
+        uses: ok-nick/setup-aftman@c52e3c91524316f8ca696574d576ea21b7518ec8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name : Run selene
         run: |
-          selene src/
+          selene src
