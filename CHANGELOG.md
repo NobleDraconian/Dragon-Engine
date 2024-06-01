@@ -1,3 +1,6 @@
+## v2.1.0
+- Service mutual dependencies are now supported. Include a `PostInit` method in a service, and reference other services there to avoid dependency race conditions.
+
 ## v2.0.0
 - The framework's structure has been changed to be compatible with [wally](https://wally.run/), a package manager for Roblox. This means that the framework is now a wally package! The package can be viewed [here](https://wally.run/package/nobledraconian/dragon-engine).
 - The `Enum` APIs have been deprecated and should not be used.
