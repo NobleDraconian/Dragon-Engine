@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="generator" content="Docusaurus v2.0.1">
 <title data-rh="true">DragonEngineServer | Dragon-Engine</title><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://NobleDraconian.github.io/Dragon-Engine/api/DragonEngineServer"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="DragonEngineServer | Dragon-Engine"><meta data-rh="true" name="description" content="Handles the server sided aspects of the framework such as services, creating remotes, etc."><meta data-rh="true" property="og:description" content="Handles the server sided aspects of the framework such as services, creating remotes, etc."><link data-rh="true" rel="icon" href="/Dragon-Engine/Assets/Web/Branding/Dragon_Engine_Logo_White.png"><link data-rh="true" rel="canonical" href="https://NobleDraconian.github.io/Dragon-Engine/api/DragonEngineServer"><link data-rh="true" rel="alternate" href="https://NobleDraconian.github.io/Dragon-Engine/api/DragonEngineServer" hreflang="en"><link data-rh="true" rel="alternate" href="https://NobleDraconian.github.io/Dragon-Engine/api/DragonEngineServer" hreflang="x-default"><link rel="stylesheet" href="/Dragon-Engine/assets/css/styles.396b872c.css">
-<link rel="preload" href="/Dragon-Engine/assets/js/runtime~main.584316aa.js" as="script">
-<link rel="preload" href="/Dragon-Engine/assets/js/main.f90ed7af.js" as="script">
+<link rel="preload" href="/Dragon-Engine/assets/js/runtime~main.cf5061fb.js" as="script">
+<link rel="preload" href="/Dragon-Engine/assets/js/main.f08e19d3.js" as="script">
 </head>
 <body class="navigation-with-keyboard">
 <script>!function(){function e(e){document.documentElement.setAttribute("data-theme",e)}var t=function(){var e=null;try{e=localStorage.getItem("theme")}catch(e){}return e}();null!==t?e(t):window.matchMedia("(prefers-color-scheme: dark)").matches?e("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,e("light"))}()</script><div id="__docusaurus">
@@ -52,7 +52,7 @@
 <span class="token punctuation">}</span>
 </code></pre>
 <p>For more information, see <a href="../docs/Configuration#server-paths">server paths</a>.</p>
-</div><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a class="hash-link" href="#functions" title="Direct link to heading">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetService"><code style="text-decoration:none">GetService</code><a class="hash-link" href="#GetService" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L113"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">GetService</code><code>(</code><div class="inset_uKQm"><div><code>ServiceName<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+</div><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a class="hash-link" href="#functions" title="Direct link to heading">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetService"><code style="text-decoration:none">GetService</code><a class="hash-link" href="#GetService" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L112"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">GetService</code><code>(</code><div class="inset_uKQm"><div><code>ServiceName<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
 <p>The name of the service to get a reference to</p>
 </span></span></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Dragon-Engine/api/DragonEngineServer#Service">Service</a></code><span class="inlineDescription_G7Er">-- <span>
 <p>The service with the given name</p>
@@ -61,7 +61,7 @@
 <pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> MarketService <span class="token operator">=</span> DragonEngine<span class="token punctuation">:</span><span class="token function">GetService</span><span class="token punctuation">(</span><span class="token string">"MarketService"</span><span class="token punctuation">)</span>
 MarketService<span class="token punctuation">:</span><span class="token function">GiveItem</span><span class="token punctuation">(</span>SomePlayer<span class="token punctuation">,</span><span class="token string">"HealthPotion"</span><span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">)</span>
 </code></pre>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="RegisterClientEndpoint"><code style="text-decoration:none">RegisterClientEndpoint</code><a class="hash-link" href="#RegisterClientEndpoint" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L472"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">RegisterClientEndpoint</code><code>(</code><div class="inset_uKQm"><div><code>EndpointName<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="RegisterClientEndpoint"><code style="text-decoration:none">RegisterClientEndpoint</code><a class="hash-link" href="#RegisterClientEndpoint" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L611"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">RegisterClientEndpoint</code><code>(</code><div class="inset_uKQm"><div><code>EndpointName<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
 <p>The name to assign to the endpoint</p>
 </span></span></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/class/RemoteFunction" target="_blank" rel="noopener noreferrer">RemoteFunction<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><span class="inlineDescription_G7Er">-- <span>
 <p>The RemoteFunction that was registered with the framework</p>
@@ -90,7 +90,7 @@ MarketService<span class="token punctuation">:</span><span class="token function
     <p>Use with caution! Using the client as a source of truth is dangerous and often bad practice.</p>
   </div>
 </div>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="RegisterServiceClientEvent"><code style="text-decoration:none">RegisterServiceClientEvent</code><a class="hash-link" href="#RegisterServiceClientEvent" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L502"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">RegisterServiceClientEvent</code><code>(</code><div class="inset_uKQm"><div><code>Name<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="RegisterServiceClientEvent"><code style="text-decoration:none">RegisterServiceClientEvent</code><a class="hash-link" href="#RegisterServiceClientEvent" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L648"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">RegisterServiceClientEvent</code><code>(</code><div class="inset_uKQm"><div><code>Name<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
 <p>The name to assign to the RemoteEvent</p>
 </span></span></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/class/RemoteEvent" target="_blank" rel="noopener noreferrer">RemoteEvent<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><span class="inlineDescription_G7Er">-- <span>
 <p>The RemoteEvent that was registered with the framework</p>
@@ -109,7 +109,7 @@ AnnouncementRemote<span class="token punctuation">:</span><span class="token fun
     <p>This API should only be called from a service! Calling it outside of a service will cause errors.</p>
   </div>
 </div>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="RegisterServiceServerEvent"><code style="text-decoration:none">RegisterServiceServerEvent</code><a class="hash-link" href="#RegisterServiceServerEvent" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L532"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">RegisterServiceServerEvent</code><code>(</code><div class="inset_uKQm"><div><code>Name<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="RegisterServiceServerEvent"><code style="text-decoration:none">RegisterServiceServerEvent</code><a class="hash-link" href="#RegisterServiceServerEvent" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L685"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">RegisterServiceServerEvent</code><code>(</code><div class="inset_uKQm"><div><code>Name<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
 <p>The name to assign to the BindableEvent</p>
 </span></span></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/class/BindableEvent" target="_blank" rel="noopener noreferrer">BindableEvent<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><span class="inlineDescription_G7Er">-- <span>
 <p>The BindableEvent that was registered with the framework</p>
@@ -128,7 +128,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
     <p>This API should only be called from a service! Calling it outside of a service will cause errors.</p>
   </div>
 </div>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Run"><code style="text-decoration:none">Run</code><a class="hash-link" href="#Run" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L567"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">Run</code><code>(</code><div class="inset_uKQm"><div><code>FrameworkSettings<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Dragon-Engine/api/DragonEngine#FrameworkSettings">FrameworkSettings</a></code><span class="inlineDescription_G7Er">-- <span>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Run"><code style="text-decoration:none">Run</code><a class="hash-link" href="#Run" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NobleDraconian/Dragon-Engine/blob/master/src/Server/Core/DragonEngine.lua#L727"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>DragonEngineServer<!-- -->:</code><code class="green_DgR4">Run</code><code>(</code><div class="inset_uKQm"><div><code>FrameworkSettings<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Dragon-Engine/api/DragonEngine#FrameworkSettings">FrameworkSettings</a></code><span class="inlineDescription_G7Er">-- <span>
 <p>The settings to configure the framework's behavior</p>
 </span></span></div></div><code>) → </code><code class="blue_P4bS">nil</code></div><div>
 <p>
@@ -177,7 +177,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             ],
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 113,
+                &quot;line&quot;: 112,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -204,7 +204,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;private&quot;: true,
             &quot;source&quot;: {
-                &quot;line&quot;: 132,
+                &quot;line&quot;: 134,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -227,7 +227,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;private&quot;: true,
             &quot;source&quot;: {
-                &quot;line&quot;: 230,
+                &quot;line&quot;: 248,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -254,7 +254,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;private&quot;: true,
             &quot;source&quot;: {
-                &quot;line&quot;: 251,
+                &quot;line&quot;: 269,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -281,7 +281,34 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;private&quot;: true,
             &quot;source&quot;: {
-                &quot;line&quot;: 315,
+                &quot;line&quot;: 346,
+                &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;PostInitService&quot;,
+            &quot;desc&quot;: &quot;Calls `:PostInit()` on the specified service.\n```lua\nlocal Success,Error = DragonEngine:PostInitService(\&quot;MarketService\&quot;)\nif not Success then\n\tprint(\&quot;Failed to post-init marketservice : \&quot; .. Error)\nend\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;ServiceName&quot;,
+                    &quot;desc&quot;: &quot;The name of the service to post-init&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;A `bool` describing whether or not the service had post-init called successfully&quot;,
+                    &quot;lua_type&quot;: &quot;bool&quot;
+                },
+                {
+                    &quot;desc&quot;: &quot;A `string` containing the error message if the service fails to run post-init. Is `nil` if post-init was successful.&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;private&quot;: true,
+            &quot;source&quot;: {
+                &quot;line&quot;: 413,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -308,7 +335,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;private&quot;: true,
             &quot;source&quot;: {
-                &quot;line&quot;: 369,
+                &quot;line&quot;: 478,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -335,7 +362,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;private&quot;: true,
             &quot;source&quot;: {
-                &quot;line&quot;: 420,
+                &quot;line&quot;: 545,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -357,7 +384,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             ],
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 472,
+                &quot;line&quot;: 611,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -379,7 +406,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             ],
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 502,
+                &quot;line&quot;: 648,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -401,7 +428,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             ],
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 532,
+                &quot;line&quot;: 685,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         },
@@ -423,7 +450,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
             ],
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 567,
+                &quot;line&quot;: 727,
                 &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
             }
         }
@@ -511,7 +538,7 @@ ItemSpawnedBindable<span class="token punctuation">:</span><span class="token fu
         &quot;path&quot;: &quot;src/Server/Core/DragonEngine.lua&quot;
     }
 }</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a><ul><li><a href="#ServerPaths" class="table-of-contents__link toc-highlight">ServerPaths</a></li><li><a href="#Service" class="table-of-contents__link toc-highlight">Service</a></li><li><a href="#ServiceClient" class="table-of-contents__link toc-highlight">ServiceClient</a></li></ul></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#GetService" class="table-of-contents__link toc-highlight">:GetService</a></li><li><a href="#RegisterClientEndpoint" class="table-of-contents__link toc-highlight">:RegisterClientEndpoint</a></li><li><a href="#RegisterServiceClientEvent" class="table-of-contents__link toc-highlight">:RegisterServiceClientEvent</a></li><li><a href="#RegisterServiceServerEvent" class="table-of-contents__link toc-highlight">:RegisterServiceServerEvent</a></li><li><a href="#Run" class="table-of-contents__link toc-highlight">:Run</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2022 Noble_Draconian. Built with Moonwave and Docusaurus</div></div></div></footer></div>
-<script src="/Dragon-Engine/assets/js/runtime~main.584316aa.js"></script>
-<script src="/Dragon-Engine/assets/js/main.f90ed7af.js"></script>
+<script src="/Dragon-Engine/assets/js/runtime~main.cf5061fb.js"></script>
+<script src="/Dragon-Engine/assets/js/main.f08e19d3.js"></script>
 </body>
 </html>
